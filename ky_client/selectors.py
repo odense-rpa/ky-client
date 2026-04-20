@@ -12,3 +12,6 @@ class KYSelectors:
 
     class Borgere:
         PERSON_OPLYSNINGER = 'table#person-oplysninger'
+        SAGSOVERSIGT = 'table#sagsoversigt'
+        UBEHANDLEDE_OPGAVER = 'table#ubehandlede-opgaver'
+        LIVSSITUATION = 'table#person-overblik-livssituation'
