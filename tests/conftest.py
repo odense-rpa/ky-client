@@ -16,3 +16,10 @@ def ky_manager() -> KYClientManager:
     manager = KYClientManager(username, password, idp)
     assert manager._client._client.cookies.get("JSESSIONID"), "Login failed - JSESSIONID cookie not set"
     return manager
+
+
+@pytest.fixture(scope="session")
+def test_cpr() -> str:
+    cpr = os.getenv("TEST_CPR") or ""
+    assert cpr, "TEST_CPR environment variable not set"
+    return cpr

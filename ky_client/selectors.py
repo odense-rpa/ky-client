@@ -8,3 +8,7 @@ class KYSelectors:
 
     class Main:
         LOGO = 'img#fagsystem-logo'
+        TOP_SEARCH = 'input#topSearch'
+
+    class Borgere:
+        PERSON_OPLYSNINGER = 'table#person-oplysninger'

@@ -2,21 +2,16 @@ import httpx
 import logging
 
 from urllib.parse import urljoin
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, Playwright, Browser, BrowserContext, Page
 from .hooks import create_response_logging_hook
 from .selectors import KYSelectors
 
 
 class KYClient:
     @property
-    def cookies(self) -> dict[str, str]:
-        """Get the current active cookies."""
-        return self._cookies
-
-    @cookies.setter
-    def cookies(self, value: dict[str, str]) -> None:
-        """Set the active cookies."""
-        self._cookies = value
+    def page(self) -> Page:
+        """Get the current active Playwright page."""
+        return self._page
 
     def __init__(
         self,
@@ -35,7 +30,6 @@ class KYClient:
         self._password = password
         self._idp = idp
         self._base_url = "https://fs0461.fs.kommunernesydelsessystem.dk/ky-fagsystem"
-        self._cookies: dict[str, str] = {}
         self._timeout = 30
         self._client = httpx.Client(
             timeout=self._timeout,
@@ -45,47 +39,53 @@ class KYClient:
                 "Accept": "application/json, text/plain, */*",
             },
         )
+
+        self._playwright: Playwright = sync_playwright().start()
+        self._browser: Browser = self._playwright.chromium.launch(headless=False)
+        self._context: BrowserContext = self._browser.new_context(
+            storage_state=None,
+            accept_downloads=False,
+            ignore_https_errors=True,
+        )
+        self._page: Page = self._context.new_page()
         self.login()
 
     def login(self) -> None:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            context = browser.new_context(
-                storage_state=None,
-                accept_downloads=False,
-                ignore_https_errors=True,
-            )
-            page = context.new_page()
-            page.goto(self._base_url)
+        self._page.goto(self._base_url)
 
-            try:
-                page.select_option(KYSelectors.Login.MUNICIPALITY_SELECT, self._idp)
-                page.click(KYSelectors.Login.OK_BUTTON)
-            except Exception:
-                self.logger.debug("Skipping municipality select")
+        try:
+            self._page.select_option(KYSelectors.Login.MUNICIPALITY_SELECT, self._idp)
+            self._page.click(KYSelectors.Login.OK_BUTTON)
+        except Exception:
+            self.logger.debug("Skipping municipality select")
 
-            try:
-                page.wait_for_selector(KYSelectors.Login.USERNAME, timeout=5000)
-                page.fill(KYSelectors.Login.USERNAME, self._username)
-                page.click(KYSelectors.Login.SUBMIT_BUTTON)
-            except Exception:
-                self.logger.debug("Skipping username entry")
+        try:
+            self._page.wait_for_selector(KYSelectors.Login.USERNAME, timeout=5000)
+            self._page.fill(KYSelectors.Login.USERNAME, self._username)
+            self._page.click(KYSelectors.Login.SUBMIT_BUTTON)
+        except Exception:
+            self.logger.debug("Skipping username entry")
 
-            try:
-                page.wait_for_selector(KYSelectors.Login.PASSWORD, timeout=5000)
-                page.fill(KYSelectors.Login.PASSWORD, self._password)
-                page.click(KYSelectors.Login.SUBMIT_BUTTON)
-            except Exception:
-                self.logger.debug("Skipping password entry")
+        try:
+            self._page.wait_for_selector(KYSelectors.Login.PASSWORD, timeout=5000)
+            self._page.fill(KYSelectors.Login.PASSWORD, self._password)
+            self._page.click(KYSelectors.Login.SUBMIT_BUTTON)
+        except Exception:
+            self.logger.debug("Skipping password entry")
 
-            page.wait_for_selector(KYSelectors.Main.LOGO, timeout=30000)
+        self._page.wait_for_selector(KYSelectors.Main.LOGO, timeout=30000)
 
-            cookie_names = ["JSESSIONID", "__RequestVerificationToken_L3J1bnRpbWU1"]
-            self._client.cookies = {
-                c["name"]: c["value"]
-                for c in context.cookies()
-                if c.get("name") in cookie_names and c.get("value")
-            }
+        cookie_names = ["JSESSIONID", "__RequestVerificationToken_L3J1bnRpbWU1"]
+        self._client.cookies = {
+            c["name"]: c["value"]
+            for c in self._context.cookies()
+            if c.get("name") in cookie_names and c.get("value")
+        }
+
+    def close(self) -> None:
+        """Close the browser and stop Playwright."""
+        self._browser.close()
+        self._playwright.stop()
 
     def _normalize_url(self, endpoint: str) -> str:
         """Ensure the URL is absolute, handling relative URLs."""
@@ -122,3 +122,4 @@ class KYClient:
         response = self._client.delete(url, **kwargs)
         response.raise_for_status()
         return response
+

@@ -1,7 +1,11 @@
+from ky_client.functionality.borgere import BorgereClient
+
 from .client import KYClient
 
 
 class KYClientManager:
+    borgere: BorgereClient
+
     def __init__(self, username: str, password: str, idp: str) -> None:
-        # Initialize client - this will block until login completes
         self._client = KYClient(username, password, idp)
+        self.borgere = BorgereClient(ky_client=self._client)
