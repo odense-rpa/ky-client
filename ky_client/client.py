@@ -2,7 +2,13 @@ import httpx
 import logging
 
 from urllib.parse import urljoin
-from playwright.sync_api import sync_playwright, Playwright, Browser, BrowserContext, Page
+from playwright.sync_api import (
+    sync_playwright,
+    Playwright,
+    Browser,
+    BrowserContext,
+    Page,
+)
 from .hooks import create_response_logging_hook
 from .selectors import KYSelectors
 
@@ -111,7 +117,9 @@ class KYClient:
         response.raise_for_status()
         return response
 
-    def patch(self, endpoint: str, json: dict | None = None, **kwargs) -> httpx.Response:
+    def patch(
+        self, endpoint: str, json: dict | None = None, **kwargs
+    ) -> httpx.Response:
         url = self._normalize_url(endpoint)
         response = self._client.patch(url, json=json, **kwargs)
         response.raise_for_status()
@@ -122,4 +130,3 @@ class KYClient:
         response = self._client.delete(url, **kwargs)
         response.raise_for_status()
         return response
-

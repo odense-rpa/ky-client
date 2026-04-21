@@ -44,7 +44,7 @@ def create_response_logging_hook(
 
         response_json = None
         try:
-            if not hasattr(response, '_content'):
+            if not hasattr(response, "_content"):
                 response.read()
             response_json = _parse_json_content(response.text)
         except Exception:
