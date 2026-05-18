@@ -1,0 +1,44 @@
+from ky_client import KYClientManager
+from pathlib import Path
+from ky_client.models import Indtaegter, IndtaegterType, Ydelsesarter
+import random
+
+
+def test_hent_borgersag(ky_manager: KYClientManager, test_cpr: str):
+    result = ky_manager.borgere.hent_borgersag(test_cpr)
+    assert isinstance(result, dict)
+
+
+def test_hent_ferie_oplysninger(ky_manager: KYClientManager, test_cpr: str):
+    result = ky_manager.borgere.hent_ferie_oplysninger(test_cpr)
+    assert isinstance(result, dict)
+
+
+def test_upload_dokument(ky_manager: KYClientManager, test_cpr: str):
+    sagsnøgle = "HENV-MJOML7"  # Erstat med en gyldig sagsnøgle for testen
+    file_path = (
+        Path(__file__).resolve().parents[1] / "Test Upload.txt"
+    )  # Erstat med stien til den fil, du vil uploade
+    ky_manager.borgere.upload_dokument(test_cpr, sagsnøgle, file_path)
+
+
+def test_indtast_indtægter(ky_manager: KYClientManager, test_cpr: str):
+    indtaegter = Indtaegter(
+        indtaegtstype=random.choice(list(IndtaegterType)),
+        beloeb=round(random.uniform(1000, 10000), 2),
+        dispositionsdato="31-05-2026",
+        periode_fra="01-05-2026",
+        periode_til="31-05-2026",
+        ydelsesarter=Ydelsesarter.HJAELP_TIL_FORSOERGGELSE,
+    )
+    ky_manager.borgere.indtast_indtægter(test_cpr, indtaegter)
+
+
+def test_rediger_opgave(ky_manager: KYClientManager, test_cpr: str):
+    # TODO: Implement test for rediger_opgave
+    pass
+
+
+def åbn_opgave(ky_manager: KYClientManager, test_cpr: str):
+    # TODO: Implement test for åbn_opgave
+    pass

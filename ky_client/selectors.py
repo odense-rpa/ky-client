@@ -13,6 +13,19 @@ class KYSelectors:
     class Main:
         LOGO = "img#fagsystem-logo"
         TOP_SEARCH = "input#topSearch"
+
+    class Opgaveindbakke:
+        VÆLG_OPGAVEPAKKE = "button[data-id='arbejdspakker']"
+        UBEHANDLEDE_OPGAVER = "table#ubehandledeTable"
+
+    class Borgere:
+        # Overblik
+        PERSON_OPLYSNINGER = "table#person-oplysninger"
+        SAGSOVERSIGT = "table#sagsoversigt"
+        UBEHANDLEDE_OPGAVER = "table#ubehandlede-opgaver"
+        LIVSSITUATION = "table#person-overblik-livssituation"
+
+        # Navigation
         OVERBLIK = _nav("person_overblik")
         JOURNALNOTATER_DOKUMENTER = _nav("person_journalnotater_dokumenter")
         HAENDELSER = _nav("person_haendelser")
@@ -28,14 +41,78 @@ class KYSelectors:
         JOBCENTER = _nav("person_jobcenter")
         MEDICINTILSKUD = _nav("person_medicintilskud")
 
-    class Borgere:
-        # Overblik
-        PERSON_OPLYSNINGER = "table#person-oplysninger"
-        SAGSOVERSIGT = "table#sagsoversigt"
-        UBEHANDLEDE_OPGAVER = "table#ubehandlede-opgaver"
-        LIVSSITUATION = "table#person-overblik-livssituation"
+        # Ferie
+        FERIEPERIODER_TIL_BEREGNING = "table#ferieperioder-table"
+        FRAVÆR_FRA_JOBCENTER = "table#fravaer-table"
+        FERIEKONTO = "table#feriekonto"
+        FERIEPERIODER_FRA_FERIEKONTO = "table#ferieperioder"
 
-        # Udbetaling
-        @staticmethod
-        def KOMMENDE_UDBETALINGER(p_id: str) -> str:
-            return f"table#tabel_kommende_udbetalinger_{p_id}"
+        # Handlinger
+        HANDLINGER_DROPDOWN = "li#handlinger-dropdown a.dropdown-toggle"
+        HANDLINGER_SUBPROCESSER = 'a.handlinger-submenu-btn:has(span[data-textkey="fagsystem.handlinger.haendelsegruppe.sub"])'
+        HANDLINGER_SUBPROCESSER_INDTÆGTER = (
+            'a.handlinger-leaf[data-textkey="system.type.haendelse_type.hd_indtaegter"]'
+        )
+
+        # Handlinger - Indtægter
+        INDTÆGTER_MANUEL_INDTASTNING = 'button[data-onclick*="/opgave/indtaegter/formFields"]:has(span[data-textkey="system.medtagkoncept.add"])'
+        INDTÆGTER_CVR_SE_NUMMER = "input#indtaegterTable\\.cvrNummer\\.valueString"
+        INDTÆGTER_VIRKSOMHEDSNAVN = "input#indtaegterTable\\.cvrNavn\\.valueString"
+        INDTÆGTER_TYPE = "select#indtaegterTable\\.indtaegtsType\\.valueString"
+        INDTÆGTER_BELOEB = "input#indtaegterTable\\.beloeb\\.valueString"
+        INDTÆGTER_DISPOSITIONSDATO = (
+            "input#command\\.indtaegterTable\\.dispotitionsdato\\.valueString"
+        )
+        INDTÆGTER_PERIODE_FRA = (
+            "input#command\\.indtaegterTable\\.optjeningsperiodeFra\\.valueString"
+        )
+        INDTÆGTER_PERIODE_TIL = (
+            "input#command\\.indtaegterTable\\.optjeningsperiodeTil\\.valueString"
+        )
+        INDTÆGTER_PENSIONSBIDRAG_EGET = (
+            "input#indtaegterTable\\.pensionsbidragEget\\.valueString"
+        )
+        INDTÆGTER_PENSIONSBIDRAG_ARBEJDSGIVER = (
+            "input#indtaegterTable\\.pensionsbidragArbejdsgiver\\.valueString"
+        )
+        INDTÆGTER_ATP_BIDRAG_EGET = (
+            "input#indtaegterTable\\.atpBidragEget\\.valueString"
+        )
+        INDTÆGTER_ATP_BIDRAG_ARBEJDSGIVER = (
+            "input#indtaegterTable\\.atpBidragArbejdsgiver\\.valueString"
+        )
+        INDTÆGTER_AM_BIDRAG = "input#indtaegterTable\\.amBidrag\\.valueString"
+        INDTÆGTER_TIMER_I_PERIODEN = "input#indtaegterTable\\.timer\\.valueString"
+        INDTÆGTER_NETTOFERIEPENGE = (
+            "input#indtaegterTable\\.feriepengeNetto\\.valueString"
+        )
+        INDTÆGTER_BRUTTOFICEREDE_NETTOFERIEPENGE = (
+            "input#indtaegterTable\\.feriepengeNettoBruttoficeret\\.valueString"
+        )
+        INDTÆGTER_BRUTTOFERIEPENGE_TIMELOENNDE = (
+            "input#indtaegterTable\\.bruttoferipengeTimeloennede\\.valueString"
+        )
+        INDTÆGTER_A_INDKOMST_SOM_FERIEPENGE = (
+            "input#indtaegterTable\\.aIndkomstSomFeriepenge\\.valueString"
+        )
+        INDTÆGTER_SOEGNE_OG_HELLIGDAGSBETALING = (
+            "input#indtaegterTable\\.opsparedeSoegneHelligdage\\.valueString"
+        )
+        INDTÆGTER_FRI_KOST_OG_LOGI = (
+            "input#indtaegterTable\\.friKostOgLogi\\.valueString"
+        )
+        INDTÆGTER_FRI_BIL = "input#indtaegterTable\\.friBil\\.valueString"
+        INDTÆGTER_FRI_TELEFON = "input#indtaegterTable\\.friTelefon\\.valueString"
+        INDTÆGTER_SUNDHEDSFORSIKRING_OG_GRUPPELIV = (
+            "input#indtaegterTable\\.sundhedsforsikringOgGruppeliv\\.valueString"
+        )
+        INDTÆGTER_SKATTEFRI_REJSE_OG_BEFORDRINGSGODTGOERELSE = (
+            "input#indtaegterTable\\.rejseOgBefordringsgodtgoerelse\\.valueString"
+        )
+        INDTÆGTER_OPSPARET_FERIEFRIDAGE = (
+            "input#indtaegterTable\\.opsparetFeriefridage\\.valueString"
+        )
+        INDTÆGTER_YDELSESARTER = "select#indtaegterTable\\.ydelsesarter\\.valueString"
+        INDTÆGTER_GEM = 'button.submit-modul[data-href="/opgave/indtaegter/submitForm"]:has(span[data-textkey="system.medtagkoncept.gem"])'
+        INDTÆGTER_GODKEND = 'button.submit-opgave[data-href="/opgave/handling/fortsaet"]:has(span[data-textkey="fagsystem.person.opgave.handling.godkend"])'
+        INDTÆGTER_LUK = 'button#docked-close.submit-opgave[data-href="/opgave/handling/lukAfsluttetOpgave"]:has(span[data-textkey="fagsystem.person.opgave.handling.luk_afsluttet_opgave"])'

@@ -14,9 +14,7 @@ def ky_manager() -> KYClientManager:
     assert username
 
     manager = KYClientManager(username, password, idp)
-    assert manager._client._client.cookies.get("JSESSIONID"), (
-        "Login failed - JSESSIONID cookie not set"
-    )
+
     return manager
 
 

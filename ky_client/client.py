@@ -5,8 +5,6 @@ from urllib.parse import urljoin
 from playwright.sync_api import (
     sync_playwright,
     Playwright,
-    Browser,
-    BrowserContext,
     Page,
 )
 from .hooks import create_response_logging_hook
@@ -47,13 +45,23 @@ class KYClient:
         )
 
         self._playwright: Playwright = sync_playwright().start()
-        self._browser: Browser = self._playwright.chromium.launch(headless=False)
-        self._context: BrowserContext = self._browser.new_context(
-            storage_state=None,
+        browser_args = [
+            "--window-size=1920,1080",
+            "--lang=da-DK",
+        ]
+        self._browser = self._playwright.chromium.launch(
+            headless=False,
+            args=browser_args,
+        )
+        self._context = self._browser.new_context(
+            viewport={"width": 1920, "height": 1080},
             accept_downloads=False,
             ignore_https_errors=True,
+            locale="da-DK",
         )
-        self._page: Page = self._context.new_page()
+        self._page: Page = (
+            self._context.pages[0] if self._context.pages else self._context.new_page()
+        )
         self.login()
 
     def login(self) -> None:
@@ -81,15 +89,9 @@ class KYClient:
 
         self._page.wait_for_selector(KYSelectors.Main.LOGO, timeout=30000)
 
-        cookie_names = ["JSESSIONID", "__RequestVerificationToken_L3J1bnRpbWU1"]
-        self._client.cookies = {
-            c["name"]: c["value"]
-            for c in self._context.cookies()
-            if c.get("name") in cookie_names and c.get("value")
-        }
-
     def close(self) -> None:
         """Close the browser and stop Playwright."""
+        self._context.close()
         self._browser.close()
         self._playwright.stop()
 
