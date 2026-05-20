@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
+from typing import Literal, Optional
 
 
 class IndtaegterType(Enum):
@@ -64,3 +64,21 @@ class Indtaegter:
     skattefri_rejse_og_befordringsgodtgoerelse: Optional[float] = None
     opsparet_feriefridage: Optional[float] = None
     ydelsesarter: Optional[Ydelsesarter] = None
+
+
+@dataclass
+class RedigerOpgave:
+    prioritet: Literal["Lav", "Mellem", "Høj"] = "Lav"
+    forfalds_dato: str = ""
+    opfølgningsopgavetype: str = ""
+    sagsbehandler: str = ""
+    frekvens: Literal[
+        "Aldrig",
+        "Dagligt",
+        "Ugenligt",
+        "Hver anden uge",
+        "Månedligt",
+        "Hver tredje måned",
+        "Halvårligt",
+        "Årligt",
+    ] = "Aldrig"

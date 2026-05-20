@@ -116,3 +116,11 @@ class KYSelectors:
         INDTÆGTER_GEM = 'button.submit-modul[data-href="/opgave/indtaegter/submitForm"]:has(span[data-textkey="system.medtagkoncept.gem"])'
         INDTÆGTER_GODKEND = 'button.submit-opgave[data-href="/opgave/handling/fortsaet"]:has(span[data-textkey="fagsystem.person.opgave.handling.godkend"])'
         INDTÆGTER_LUK = 'button#docked-close.submit-opgave[data-href="/opgave/handling/lukAfsluttetOpgave"]:has(span[data-textkey="fagsystem.person.opgave.handling.luk_afsluttet_opgave"])'
+
+        # Rediger opgave
+        REDIGER_OPGAVE_GEM = (
+            'button.btn.btn-primary[data-textkey="fagsystem.edit_opgave_modal.edit.submit.btn"]'
+        )
+        REDIGER_OPGAVE_LUK = (
+            'button.btn.btn-primary[data-textkey="fagsystem.edit_opgave_modal.luk.btn"]'
+        )

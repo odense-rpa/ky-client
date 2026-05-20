@@ -1,6 +1,6 @@
 from ky_client import KYClientManager
 from pathlib import Path
-from ky_client.models import Indtaegter, IndtaegterType, Ydelsesarter
+from ky_client.models import Indtaegter, IndtaegterType, RedigerOpgave, Ydelsesarter
 import random
 
 
@@ -35,10 +35,21 @@ def test_indtast_indtægter(ky_manager: KYClientManager, test_cpr: str):
 
 
 def test_rediger_opgave(ky_manager: KYClientManager, test_cpr: str):
-    # TODO: Implement test for rediger_opgave
-    pass
-
+    ændringer = RedigerOpgave(
+        prioritet="Høj",
+        forfalds_dato="31-05-2026",
+        opfølgningsopgavetype="x. Lars J.",
+        sagsbehandler="larje",
+        frekvens="Ugenligt",
+    )
+    ky_manager.borgere.rediger_opgave(test_cpr, "1acc834d-b4c5-47f7-a7c2-13b631b52e27", ændringer)
+    
 
 def åbn_opgave(ky_manager: KYClientManager, test_cpr: str):
     # TODO: Implement test for åbn_opgave
     pass
+
+def test_luk_borgersag(ky_manager: KYClientManager, test_cpr: str):
+    borger_sag = ky_manager.borgere.hent_borgersag(test_cpr)
+    ky_manager.borgere.luk_borgersag(borger_sag["pId"])
+    

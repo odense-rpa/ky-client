@@ -10,7 +10,7 @@ from ky_client.utils import (
     navigate_to,
     naviger_til_borger,
 )
-from ky_client.models import Indtaegter
+from ky_client.models import Indtaegter, RedigerOpgave
 
 
 class BorgereClient:
@@ -21,10 +21,10 @@ class BorgereClient:
     def hent_borgersag(self, cpr: str) -> dict:
         naviger_til_borger(self._page, cpr, timeout=30000)
 
-        match = re.search(r"pId=([a-f0-9\-]*)", self._page.url)
-        self.p_id = match.group(1) if match else None
+        match = re.search(r"pId=([a-f0-9\-]*)", self._page.url)        
 
         data = {
+            "pId": match.group(1) if match else None,
             "Personoplysninger": extract_keyed_table(
                 self._page, "table#person-oplysninger"
             ),
@@ -40,10 +40,23 @@ class BorgereClient:
             "Sagsoversigt": extract_header_table(self._page, "table#sagsoversigt"),
             "Seneste hændelser": extract_header_table(
                 self._page, "table#seneste-haendelser"
-            ),
+            ),            
         }
 
         return data
+
+    
+    def luk_borgersag(self, p_id: str) -> None:
+        self._page.click(
+            f'li.tab.topmenu-tab i[data-entity-id="{p_id}"]'
+        )
+
+        self._page.wait_for_selector(
+            KYSelectors.Opgaveindbakke.VÆLG_OPGAVEPAKKE, timeout=5000
+        )        
+        
+        # TODO: If a popup appears, saying that multiple tasks are unhandled, find a way to close them all.
+
 
     def hent_ferie_oplysninger(self, cpr: str) -> dict:
         naviger_til_borger(self._page, cpr, timeout=30000)
@@ -253,6 +266,120 @@ class BorgereClient:
         self._page.locator(KYSelectors.Borgere.INDTÆGTER_LUK).click(timeout=30000)
         self._page.wait_for_selector(
             KYSelectors.Borgere.UBEHANDLEDE_OPGAVER, timeout=30000
+        )
+
+
+    def godkend_opgave(self, cpr: str, opgave_id: str) -> None:
+        naviger_til_borger(self._page, cpr, timeout=30000)
+        
+        
+
+
+    def rediger_opgave(self, cpr: str, opgave_id: str, ændringer: RedigerOpgave) -> None:
+        naviger_til_borger(self._page, cpr, timeout=30000)
+        self._page.click(
+            f'{KYSelectors.Borgere.UBEHANDLEDE_OPGAVER} tbody tr[data-id="{opgave_id}"] a.overblik-modal-button[data-target="#opgaveEditForm"]',
+            timeout=30000,
+        )
+
+        # Wait for the edit form to be open before filling fields.
+        self._page.wait_for_selector("select#priority", timeout=30000)
+
+        # Mandatory fields
+        if not ændringer.forfalds_dato:
+            raise ValueError("forfalds_dato er påkrævet for redigering af opgave")
+
+        self._select_styled_or_native_dropdown("select#priority", ændringer.prioritet)
+        self._page.fill("input#command\\.forfaldsdato", ændringer.forfalds_dato)
+        self._select_styled_or_native_dropdown("select#opgaveFrekvens", ændringer.frekvens)
+
+        # Optional fields
+        if ændringer.opfølgningsopgavetype:
+            self._select_styled_or_native_dropdown(
+                "select#subType", ændringer.opfølgningsopgavetype
+            )
+
+        if ændringer.sagsbehandler:
+            sagsbehandler_input = self._page.locator("input#typeahead")
+            sagsbehandler_input.fill(ændringer.sagsbehandler)
+            # Typeahead usually supports keyboard confirmation when only one hit exists.
+            sagsbehandler_input.press("ArrowDown")
+            sagsbehandler_input.press("Enter")
+
+        self._page.click(KYSelectors.Borgere.REDIGER_OPGAVE_GEM, timeout=30000)
+        self._page.wait_for_selector(KYSelectors.Borgere.REDIGER_OPGAVE_LUK, timeout=30000)
+        self._page.click(KYSelectors.Borgere.REDIGER_OPGAVE_LUK, timeout=30000)
+
+        
+
+        
+
+    def _select_styled_or_native_dropdown(self, select_selector: str, option_label: str) -> None:
+        """Select option via JS-styled dropdown UI when present, else fall back to native select."""
+        select_locator = self._page.locator(select_selector)
+        select_locator.wait_for(state="visible", timeout=30000)
+
+        option_value = self._page.eval_on_selector(
+            select_selector,
+            """(el, targetLabel) => {
+                const normalize = (s) => (s || '').replace(/\\s+/g, ' ').trim();
+                const wanted = normalize(targetLabel);
+                const options = Array.from(el.options || []);
+                const exact = options.find(o => normalize(o.text) === wanted);
+                if (exact) return exact.value;
+                const contains = options.find(o => normalize(o.text).includes(wanted));
+                return contains ? contains.value : null;
+            }""",
+            option_label,
+        )
+        if option_value is None:
+            raise ValueError(
+                f"Kunne ikke finde option '{option_label}' i dropdown {select_selector}"
+            )
+
+        # Preferred path for bootstrap-select widgets: set through plugin API and fire events.
+        did_set_via_plugin = self._page.evaluate(
+            """({ selector, value }) => {
+                const el = document.querySelector(selector);
+                if (!el) return false;
+                const jq = window.jQuery || window.$;
+                if (jq && typeof jq(el).selectpicker === 'function') {
+                    jq(el).selectpicker('val', value);
+                    jq(el).trigger('changed.bs.select');
+                    jq(el).trigger('change');
+                    return true;
+                }
+                return false;
+            }""",
+            {"selector": select_selector, "value": option_value},
+        )
+        if did_set_via_plugin:
+            return
+
+        # Try styled dropdown first (commonly rendered as bootstrap-select button[data-id=<select-id>]).
+        select_id = self._page.eval_on_selector(select_selector, "el => el.id")
+        if select_id:
+            styled_button = self._page.locator(
+                f'button.dropdown-toggle[data-id="{select_id}"]'
+            )
+            if styled_button.count() > 0:
+                styled_button.first.click(timeout=30000)
+                option_in_open_menu = self._page.locator(
+                    ".bootstrap-select.open .dropdown-menu.inner li a span.text",
+                    has_text=re.compile(rf"^\\s*{re.escape(option_label)}\\s*$"),
+                ).first
+                if option_in_open_menu.count() > 0:
+                    option_in_open_menu.click(timeout=30000)
+                    return
+
+        # Fallback for native select controls.
+        self._page.select_option(select_selector, value=option_value)
+        self._page.eval_on_selector(
+            select_selector,
+            """el => {
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+            }""",
         )
 
 
