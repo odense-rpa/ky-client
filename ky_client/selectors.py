@@ -124,3 +124,17 @@ class KYSelectors:
         REDIGER_OPGAVE_LUK = (
             'button.btn.btn-primary[data-textkey="fagsystem.edit_opgave_modal.luk.btn"]'
         )
+
+        # Afbryd opgave modal
+        AFBRYD_OPGAVE_ANNULLER = (
+            'button.btn.btn-primary[data-textkey="fagsystem.person.opgave.afbryd.modal.annuller.btn"]'
+        )
+        AFBRYD_OPGAVE_AFBRYD_OG_SLET = (
+            'button.btn.btn-primary[data-textkey="fagsystem.person.opgave.afbryd.modal.afbryd_og_slet.btn"]'
+        )
+        AFBRYD_OPGAVE_AFBRYD_OG_GEM = (
+            'button.btn.btn-primary[data-textkey="fagsystem.person.opgave.afbryd.modal.afbryd_og_gem.btn"]'
+        )
+        AFBRYD_OPGAVE_AABN_MODAL = (
+            'a.btn.btn-primary.margin-right:has(span[data-textkey="fagsystem.person.opgave.handling.afbryd"])'
+        )

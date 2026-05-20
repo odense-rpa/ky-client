@@ -1,7 +1,7 @@
 import re
 
 from pathlib import Path
-from playwright.sync_api import Page
+from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError
 from ky_client.client import KYClient
 from ky_client.selectors import KYSelectors
 from ky_client.utils import (
@@ -10,7 +10,7 @@ from ky_client.utils import (
     navigate_to,
     naviger_til_borger,
 )
-from ky_client.models import Indtaegter, RedigerOpgave
+from ky_client.models import Indtaegter, RedigerOpgave, AfbrydType
 
 
 class BorgereClient:
@@ -267,12 +267,45 @@ class BorgereClient:
         self._page.wait_for_selector(
             KYSelectors.Borgere.UBEHANDLEDE_OPGAVER, timeout=30000
         )
-
-
-    def godkend_opgave(self, cpr: str, opgave_id: str) -> None:
+        
+    
+    def åbn_opgave(self, cpr: str, opgave_id: str) -> None:
         naviger_til_borger(self._page, cpr, timeout=30000)
+        self._page.click(
+            f'{KYSelectors.Borgere.UBEHANDLEDE_OPGAVER} tbody tr[data-id="{opgave_id}"]',
+            timeout=30000,
+        )
+
+        self._page.wait_for_selector("div#initierende_haendelser", timeout=30000)
+
+
+    def afbryd_opgave(self, cpr: str, opgave_id: str, afbryd_type: AfbrydType) -> None:
+        naviger_til_borger(self._page, cpr, timeout=30000)
+        self._page.click(
+            f'{KYSelectors.Borgere.UBEHANDLEDE_OPGAVER} tbody tr[data-id="{opgave_id}"]',
+            timeout=30000,
+        )
+
+        self._page.click(KYSelectors.Borgere.AFBRYD_OPGAVE_AABN_MODAL, timeout=30000)
+
+        afbryd_selector_map = {
+            AfbrydType.AFBRYD: KYSelectors.Borgere.AFBRYD_OPGAVE_ANNULLER,
+            AfbrydType.AFBRYD_OG_SLET: KYSelectors.Borgere.AFBRYD_OPGAVE_AFBRYD_OG_SLET,
+            AfbrydType.AFBRYD_OG_GEM: KYSelectors.Borgere.AFBRYD_OPGAVE_AFBRYD_OG_GEM,
+        }
+        selected_selector = afbryd_selector_map[afbryd_type]
+        try:
+            # Some afbryd flows complete immediately; only click modal option when popup appears.
+            self._page.wait_for_selector(selected_selector, timeout=3000)
+            self._page.click(selected_selector, timeout=30000)
+        except PlaywrightTimeoutError:
+            pass
         
         
+
+
+    def godkend_opgave(self, cpr: str, opgave_id: str) -> None:        
+        naviger_til_borger(self._page, cpr, timeout=30000)
 
 
     def rediger_opgave(self, cpr: str, opgave_id: str, ændringer: RedigerOpgave) -> None:

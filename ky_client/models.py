@@ -37,6 +37,12 @@ class Ydelsesarter(Enum):
     RESSOURCEFORLOEBSYDELSE_JOBAFKLARING = "Ressourceforløbsydelse under jobafklaring"
 
 
+class AfbrydType(Enum):
+    AFBRYD = "Afbryd"
+    AFBRYD_OG_SLET = "Afbryd og slet"
+    AFBRYD_OG_GEM = "Afbryd og gem"
+
+
 @dataclass
 class Indtaegter:
     cvr_se_nummer: Optional[str] = None
