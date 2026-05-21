@@ -21,7 +21,7 @@ class BorgereClient:
     def hent_borgersag(self, cpr: str) -> dict:
         naviger_til_borger(self._page, cpr, timeout=30000)
 
-        match = re.search(r"pId=([a-f0-9\-]*)", self._page.url)        
+        match = re.search(r"pId=([a-f0-9\-]*)", self._page.url)
 
         data = {
             "pId": match.group(1) if match else None,
@@ -40,23 +40,19 @@ class BorgereClient:
             "Sagsoversigt": extract_header_table(self._page, "table#sagsoversigt"),
             "Seneste hændelser": extract_header_table(
                 self._page, "table#seneste-haendelser"
-            ),            
+            ),
         }
 
         return data
 
-    
     def luk_borgersag(self, p_id: str) -> None:
-        self._page.click(
-            f'li.tab.topmenu-tab i[data-entity-id="{p_id}"]'
-        )
+        self._page.click(f'li.tab.topmenu-tab i[data-entity-id="{p_id}"]')
 
         self._page.wait_for_selector(
             KYSelectors.Opgaveindbakke.VÆLG_OPGAVEPAKKE, timeout=5000
-        )        
-        
-        # TODO: If a popup appears, saying that multiple tasks are unhandled, find a way to close them all.
+        )
 
+        # TODO: If a popup appears, saying that multiple tasks are unhandled, find a way to close them all.
 
     def hent_ferie_oplysninger(self, cpr: str) -> dict:
         naviger_til_borger(self._page, cpr, timeout=30000)
@@ -267,8 +263,7 @@ class BorgereClient:
         self._page.wait_for_selector(
             KYSelectors.Borgere.UBEHANDLEDE_OPGAVER, timeout=30000
         )
-        
-    
+
     def åbn_opgave(self, cpr: str, opgave_id: str) -> None:
         naviger_til_borger(self._page, cpr, timeout=30000)
         self._page.click(
@@ -278,14 +273,9 @@ class BorgereClient:
 
         self._page.wait_for_selector("div#initierende_haendelser", timeout=30000)
 
-
     def afbryd_opgave(self, cpr: str, opgave_id: str, afbryd_type: AfbrydType) -> None:
-        naviger_til_borger(self._page, cpr, timeout=30000)
-        self._page.click(
-            f'{KYSelectors.Borgere.UBEHANDLEDE_OPGAVER} tbody tr[data-id="{opgave_id}"]',
-            timeout=30000,
-        )
-
+        # TODO: Consider navigation state if you need to do things in the task before afbryd
+        self.åbn_opgave(cpr, opgave_id)
         self._page.click(KYSelectors.Borgere.AFBRYD_OPGAVE_AABN_MODAL, timeout=30000)
 
         afbryd_selector_map = {
@@ -300,15 +290,33 @@ class BorgereClient:
             self._page.click(selected_selector, timeout=30000)
         except PlaywrightTimeoutError:
             pass
-        
-        
 
+    def godkend_opgave(self, cpr: str, opgave_id: str) -> None:
+        # TODO: Consider navigation state if you need to do things in the task before godkend
+        self.åbn_opgave(cpr, opgave_id)
 
-    def godkend_opgave(self, cpr: str, opgave_id: str) -> None:        
-        naviger_til_borger(self._page, cpr, timeout=30000)
+        # Some tasks require multiple approval steps before the close action is available.
+        for _ in range(10):
+            try:
+                self._page.wait_for_selector(
+                    KYSelectors.Borgere.GODKEND_OPGAVE_LUK,
+                    timeout=1500,
+                )
+                self._page.click(KYSelectors.Borgere.GODKEND_OPGAVE_LUK, timeout=30000)
+                return
+            except PlaywrightTimeoutError:
+                self._page.click(
+                    KYSelectors.Borgere.GODKEND_OPGAVE_GODKEND,
+                    timeout=30000,
+                )
 
+        raise RuntimeError(
+            "Kunne ikke afslutte opgaven: 'Luk' knappen blev ikke tilgængelig"
+        )
 
-    def rediger_opgave(self, cpr: str, opgave_id: str, ændringer: RedigerOpgave) -> None:
+    def rediger_opgave(
+        self, cpr: str, opgave_id: str, ændringer: RedigerOpgave
+    ) -> None:
         naviger_til_borger(self._page, cpr, timeout=30000)
         self._page.click(
             f'{KYSelectors.Borgere.UBEHANDLEDE_OPGAVER} tbody tr[data-id="{opgave_id}"] a.overblik-modal-button[data-target="#opgaveEditForm"]',
@@ -324,7 +332,9 @@ class BorgereClient:
 
         self._select_styled_or_native_dropdown("select#priority", ændringer.prioritet)
         self._page.fill("input#command\\.forfaldsdato", ændringer.forfalds_dato)
-        self._select_styled_or_native_dropdown("select#opgaveFrekvens", ændringer.frekvens)
+        self._select_styled_or_native_dropdown(
+            "select#opgaveFrekvens", ændringer.frekvens
+        )
 
         # Optional fields
         if ændringer.opfølgningsopgavetype:
@@ -340,14 +350,14 @@ class BorgereClient:
             sagsbehandler_input.press("Enter")
 
         self._page.click(KYSelectors.Borgere.REDIGER_OPGAVE_GEM, timeout=30000)
-        self._page.wait_for_selector(KYSelectors.Borgere.REDIGER_OPGAVE_LUK, timeout=30000)
+        self._page.wait_for_selector(
+            KYSelectors.Borgere.REDIGER_OPGAVE_LUK, timeout=30000
+        )
         self._page.click(KYSelectors.Borgere.REDIGER_OPGAVE_LUK, timeout=30000)
 
-        
-
-        
-
-    def _select_styled_or_native_dropdown(self, select_selector: str, option_label: str) -> None:
+    def _select_styled_or_native_dropdown(
+        self, select_selector: str, option_label: str
+    ) -> None:
         """Select option via JS-styled dropdown UI when present, else fall back to native select."""
         select_locator = self._page.locator(select_selector)
         select_locator.wait_for(state="visible", timeout=30000)

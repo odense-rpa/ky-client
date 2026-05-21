@@ -1,6 +1,12 @@
 from ky_client import KYClientManager
 from pathlib import Path
-from ky_client.models import AfbrydType, Indtaegter, IndtaegterType, RedigerOpgave, Ydelsesarter
+from ky_client.models import (
+    AfbrydType,
+    Indtaegter,
+    IndtaegterType,
+    RedigerOpgave,
+    Ydelsesarter,
+)
 import random
 
 
@@ -42,11 +48,14 @@ def test_rediger_opgave(ky_manager: KYClientManager, test_cpr: str):
         sagsbehandler="larje",
         frekvens="Ugenligt",
     )
-    ky_manager.borgere.rediger_opgave(test_cpr, "1acc834d-b4c5-47f7-a7c2-13b631b52e27", ændringer)
-    
+    ky_manager.borgere.rediger_opgave(
+        test_cpr, "1acc834d-b4c5-47f7-a7c2-13b631b52e27", ændringer
+    )
+
 
 def test_åbn_opgave(ky_manager: KYClientManager, test_cpr: str):
     ky_manager.borgere.åbn_opgave(test_cpr, "1acc834d-b4c5-47f7-a7c2-13b631b52e27")
+
 
 def test_afbryd_opgave(ky_manager: KYClientManager, test_cpr: str):
     ky_manager.borgere.afbryd_opgave(
@@ -55,10 +64,14 @@ def test_afbryd_opgave(ky_manager: KYClientManager, test_cpr: str):
         AfbrydType.AFBRYD_OG_SLET,
     )
 
+
 def test_godkend_opgave(ky_manager: KYClientManager, test_cpr: str):
-    pass
+    ky_manager.borgere.godkend_opgave(
+        test_cpr,
+        "1acc834d-b4c5-47f7-a7c2-13b631b52e27",
+    )
+
 
 def test_luk_borgersag(ky_manager: KYClientManager, test_cpr: str):
     borger_sag = ky_manager.borgere.hent_borgersag(test_cpr)
     ky_manager.borgere.luk_borgersag(borger_sag["pId"])
-    

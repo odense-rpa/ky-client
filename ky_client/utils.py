@@ -134,6 +134,8 @@ def extract_datatable_all_pages(page: Page, table_id: str) -> list[dict[str, str
 					cells.forEach((cell, i) => {
 						if (headers[i]) obj[headers[i]] = cell;
 					});
+					// Add data-opgaveid attribute to the row object
+					obj['data-opgaveid'] = row.getAttribute('data-opgaveid') || 'N/A';
 					return obj;
 				});
 

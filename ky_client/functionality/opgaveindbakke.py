@@ -66,4 +66,7 @@ class OpgaveindbakkeClient:
         )
 
         data = extract_datatable_all_pages(page, "ubehandledeTable")
+        # Add fictional column "Opgave-Id" to each row based on "data-opgaveid"
+        for row in data:
+            row["Opgave-Id"] = row.get("data-opgaveid", "N/A")
         return data

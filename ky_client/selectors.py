@@ -118,23 +118,17 @@ class KYSelectors:
         INDTÆGTER_LUK = 'button#docked-close.submit-opgave[data-href="/opgave/handling/lukAfsluttetOpgave"]:has(span[data-textkey="fagsystem.person.opgave.handling.luk_afsluttet_opgave"])'
 
         # Rediger opgave
-        REDIGER_OPGAVE_GEM = (
-            'button.btn.btn-primary[data-textkey="fagsystem.edit_opgave_modal.edit.submit.btn"]'
-        )
+        REDIGER_OPGAVE_GEM = 'button.btn.btn-primary[data-textkey="fagsystem.edit_opgave_modal.edit.submit.btn"]'
         REDIGER_OPGAVE_LUK = (
             'button.btn.btn-primary[data-textkey="fagsystem.edit_opgave_modal.luk.btn"]'
         )
 
+        # Godkend opgave
+        GODKEND_OPGAVE_GODKEND = 'button[type="button"].btn.btn-primary.submit-opgave.margin-right[data-href="/opgave/handling/fortsaet"]:has(span[data-textkey="fagsystem.person.opgave.handling.godkend"])'
+        GODKEND_OPGAVE_LUK = 'button#docked-close.submit-opgave[data-href="/opgave/handling/lukAfsluttetOpgave"]:has(span[data-textkey="fagsystem.person.opgave.handling.luk_afsluttet_opgave"])'
+
         # Afbryd opgave modal
-        AFBRYD_OPGAVE_ANNULLER = (
-            'button.btn.btn-primary[data-textkey="fagsystem.person.opgave.afbryd.modal.annuller.btn"]'
-        )
-        AFBRYD_OPGAVE_AFBRYD_OG_SLET = (
-            'button.btn.btn-primary[data-textkey="fagsystem.person.opgave.afbryd.modal.afbryd_og_slet.btn"]'
-        )
-        AFBRYD_OPGAVE_AFBRYD_OG_GEM = (
-            'button.btn.btn-primary[data-textkey="fagsystem.person.opgave.afbryd.modal.afbryd_og_gem.btn"]'
-        )
-        AFBRYD_OPGAVE_AABN_MODAL = (
-            'a.btn.btn-primary.margin-right:has(span[data-textkey="fagsystem.person.opgave.handling.afbryd"])'
-        )
+        AFBRYD_OPGAVE_ANNULLER = 'button.btn.btn-primary[data-textkey="fagsystem.person.opgave.afbryd.modal.annuller.btn"]'
+        AFBRYD_OPGAVE_AFBRYD_OG_SLET = 'button.btn.btn-primary[data-textkey="fagsystem.person.opgave.afbryd.modal.afbryd_og_slet.btn"]'
+        AFBRYD_OPGAVE_AFBRYD_OG_GEM = 'button.btn.btn-primary[data-textkey="fagsystem.person.opgave.afbryd.modal.afbryd_og_gem.btn"]'
+        AFBRYD_OPGAVE_AABN_MODAL = 'a.btn.btn-primary.margin-right:has(span[data-textkey="fagsystem.person.opgave.handling.afbryd"])'
