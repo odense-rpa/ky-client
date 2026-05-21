@@ -274,8 +274,8 @@ class BorgereClient:
         self._page.wait_for_selector("div#initierende_haendelser", timeout=30000)
 
     def afbryd_opgave(self, cpr: str, opgave_id: str, afbryd_type: AfbrydType) -> None:
-        # TODO: Consider navigation state if you need to do things in the task before afbryd
-        self.åbn_opgave(cpr, opgave_id)
+        if self._page.locator("div#initierende_haendelser").count() == 0:
+            self.åbn_opgave(cpr, opgave_id)
         self._page.click(KYSelectors.Borgere.AFBRYD_OPGAVE_AABN_MODAL, timeout=30000)
 
         afbryd_selector_map = {
@@ -292,8 +292,8 @@ class BorgereClient:
             pass
 
     def godkend_opgave(self, cpr: str, opgave_id: str) -> None:
-        # TODO: Consider navigation state if you need to do things in the task before godkend
-        self.åbn_opgave(cpr, opgave_id)
+        if self._page.locator("div#initierende_haendelser").count() == 0:
+            self.åbn_opgave(cpr, opgave_id)
 
         # Some tasks require multiple approval steps before the close action is available.
         for _ in range(10):
