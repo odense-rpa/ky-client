@@ -6,6 +6,7 @@ from playwright.sync_api import (
     sync_playwright,
     Playwright,
     Page,
+    Error as PlaywrightError,
 )
 from .hooks import create_response_logging_hook
 from .selectors import KYSelectors
@@ -87,7 +88,22 @@ class KYClient:
         except Exception:
             self.logger.debug("Skipping password entry")
 
-        self._page.wait_for_selector(KYSelectors.Main.LOGO, timeout=30000)
+        # Wait for page to load before checking for logo
+        try:
+            self._page.wait_for_load_state("networkidle", timeout=30000)
+        except PlaywrightError:
+            self.logger.debug("Page did not reach networkidle state, continuing anyway")
+
+        # Wait for logo with error handling
+        try:
+            self._page.wait_for_selector(KYSelectors.Main.LOGO, timeout=30000)
+        except PlaywrightError as e:
+            self.logger.error(f"Failed to wait for logo: {e}")
+            # Check if page is still open before retrying
+            if self._page.is_closed():
+                raise RuntimeError("Page was closed during login") from e
+            # Retry once more with fresh page state
+            self._page.wait_for_selector(KYSelectors.Main.LOGO, timeout=30000)
 
     def close(self) -> None:
         """Close the browser and stop Playwright."""
