@@ -137,7 +137,7 @@ class BorgereClient:
         if indtægter.beloeb is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_BELOEB,
-                _to_danish_decimal(indtægter.beloeb),
+                str(indtægter.beloeb),
             )
         if indtægter.dispositionsdato:
             self._page.fill(
@@ -357,6 +357,8 @@ class BorgereClient:
             KYSelectors.Borgere.REDIGER_OPGAVE_LUK, timeout=30000
         )
         self._page.click(KYSelectors.Borgere.REDIGER_OPGAVE_LUK, timeout=30000)
+
+    # TODO: Slet opgave
 
     def _select_styled_or_native_dropdown(
         self, select_selector: str, option_label: str

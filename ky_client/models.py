@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from decimal import Decimal
 from enum import Enum
 from typing import Literal, Optional
 
@@ -48,7 +49,7 @@ class Indtægter:
     cvr_se_nummer: Optional[str] = None
     virksomhedsnavn: Optional[str] = None
     indtaegtstype: IndtægterType = field(default=IndtægterType.VAELG_FRA_LISTE)
-    beloeb: float = 0.0
+    beloeb: Decimal = Decimal("0.0")
     dispositionsdato: str = ""
     periode_fra: str = ""
     periode_til: str = ""
