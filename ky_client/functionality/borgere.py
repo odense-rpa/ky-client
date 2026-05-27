@@ -10,7 +10,7 @@ from ky_client.utils import (
     navigate_to,
     naviger_til_borger,
 )
-from ky_client.models import Indtaegter, RedigerOpgave, AfbrydType
+from ky_client.models import Indtægter, RedigerOpgave, AfbrydType
 
 
 class BorgereClient:
@@ -104,7 +104,7 @@ class BorgereClient:
             "button.btn-submit-form[data-url='/entitet/sag/submitUploads/']"
         )
 
-    def indtast_indtægter(self, cpr: str, indtaegter: Indtaegter) -> None:
+    def indtast_indtægter(self, cpr: str, indtægter: Indtægter) -> None:
         naviger_til_borger(self._page, cpr, timeout=30000)
         self._page.locator(KYSelectors.Borgere.HANDLINGER_DROPDOWN).click(timeout=30000)
         self._page.locator(KYSelectors.Borgere.HANDLINGER_SUBPROCESSER).click(
@@ -118,134 +118,134 @@ class BorgereClient:
         )
 
         # Fill all possible fields if present, using selectors from KYSelectors.Borgere
-        if indtaegter.cvr_se_nummer:
+        if indtægter.cvr_se_nummer:
             self._page.fill(
-                KYSelectors.Borgere.INDTÆGTER_CVR_SE_NUMMER, indtaegter.cvr_se_nummer
+                KYSelectors.Borgere.INDTÆGTER_CVR_SE_NUMMER, indtægter.cvr_se_nummer
             )
-        if indtaegter.virksomhedsnavn:
+        if indtægter.virksomhedsnavn:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_VIRKSOMHEDSNAVN,
-                indtaegter.virksomhedsnavn,
+                indtægter.virksomhedsnavn,
             )
-        if indtaegter.indtaegtstype:
+        if indtægter.indtaegtstype:
             self._page.wait_for_selector(
                 KYSelectors.Borgere.INDTÆGTER_TYPE, timeout=30000
             )
             self._page.select_option(
-                KYSelectors.Borgere.INDTÆGTER_TYPE, label=indtaegter.indtaegtstype.value
+                KYSelectors.Borgere.INDTÆGTER_TYPE, label=indtægter.indtaegtstype.value
             )
-        if indtaegter.beloeb is not None:
+        if indtægter.beloeb is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_BELOEB,
-                _to_danish_decimal(indtaegter.beloeb),
+                _to_danish_decimal(indtægter.beloeb),
             )
-        if indtaegter.dispositionsdato:
+        if indtægter.dispositionsdato:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_DISPOSITIONSDATO,
-                indtaegter.dispositionsdato,
+                indtægter.dispositionsdato,
             )
-        if indtaegter.periode_fra:
+        if indtægter.periode_fra:
             self._page.fill(
-                KYSelectors.Borgere.INDTÆGTER_PERIODE_FRA, indtaegter.periode_fra
+                KYSelectors.Borgere.INDTÆGTER_PERIODE_FRA, indtægter.periode_fra
             )
-        if indtaegter.periode_til:
+        if indtægter.periode_til:
             self._page.fill(
-                KYSelectors.Borgere.INDTÆGTER_PERIODE_TIL, indtaegter.periode_til
+                KYSelectors.Borgere.INDTÆGTER_PERIODE_TIL, indtægter.periode_til
             )
-        if indtaegter.pensionsbidrag_eget is not None:
+        if indtægter.pensionsbidrag_eget is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_PENSIONSBIDRAG_EGET,
-                _to_danish_decimal(indtaegter.pensionsbidrag_eget),
+                _to_danish_decimal(indtægter.pensionsbidrag_eget),
             )
-        if indtaegter.pensionsbidrag_arbejdsgiver is not None:
+        if indtægter.pensionsbidrag_arbejdsgiver is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_PENSIONSBIDRAG_ARBEJDSGIVER,
-                _to_danish_decimal(indtaegter.pensionsbidrag_arbejdsgiver),
+                _to_danish_decimal(indtægter.pensionsbidrag_arbejdsgiver),
             )
-        if indtaegter.atp_bidrag_eget is not None:
+        if indtægter.atp_bidrag_eget is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_ATP_BIDRAG_EGET,
-                _to_danish_decimal(indtaegter.atp_bidrag_eget),
+                _to_danish_decimal(indtægter.atp_bidrag_eget),
             )
-        if indtaegter.atp_bidrag_arbejdsgiver is not None:
+        if indtægter.atp_bidrag_arbejdsgiver is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_ATP_BIDRAG_ARBEJDSGIVER,
-                _to_danish_decimal(indtaegter.atp_bidrag_arbejdsgiver),
+                _to_danish_decimal(indtægter.atp_bidrag_arbejdsgiver),
             )
-        if indtaegter.am_bidrag is not None:
+        if indtægter.am_bidrag is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_AM_BIDRAG,
-                _to_danish_decimal(indtaegter.am_bidrag),
+                _to_danish_decimal(indtægter.am_bidrag),
             )
-        if indtaegter.timer_i_perioden is not None:
+        if indtægter.timer_i_perioden is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_TIMER_I_PERIODEN,
-                str(indtaegter.timer_i_perioden),
+                str(indtægter.timer_i_perioden),
             )
-        if indtaegter.nettoferiepenge is not None:
+        if indtægter.nettoferiepenge is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_NETTOFERIEPENGE,
-                _to_danish_decimal(indtaegter.nettoferiepenge),
+                _to_danish_decimal(indtægter.nettoferiepenge),
             )
-        if indtaegter.bruttoficerede_nettoferiepenge is not None:
+        if indtægter.bruttoficerede_nettoferiepenge is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_BRUTTOFICEREDE_NETTOFERIEPENGE,
-                _to_danish_decimal(indtaegter.bruttoficerede_nettoferiepenge),
+                _to_danish_decimal(indtægter.bruttoficerede_nettoferiepenge),
             )
-        if indtaegter.bruttoferiepenge_timeloennede is not None:
+        if indtægter.bruttoferiepenge_timeloennede is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_BRUTTOFERIEPENGE_TIMELOENNDE,
-                _to_danish_decimal(indtaegter.bruttoferiepenge_timeloennede),
+                _to_danish_decimal(indtægter.bruttoferiepenge_timeloennede),
             )
-        if indtaegter.a_indkomst_som_feriepenge is not None:
+        if indtægter.a_indkomst_som_feriepenge is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_A_INDKOMST_SOM_FERIEPENGE,
-                _to_danish_decimal(indtaegter.a_indkomst_som_feriepenge),
+                _to_danish_decimal(indtægter.a_indkomst_som_feriepenge),
             )
-        if indtaegter.soegne_og_helligdagsbetaling is not None:
+        if indtægter.soegne_og_helligdagsbetaling is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_SOEGNE_OG_HELLIGDAGSBETALING,
-                _to_danish_decimal(indtaegter.soegne_og_helligdagsbetaling),
+                _to_danish_decimal(indtægter.soegne_og_helligdagsbetaling),
             )
-        if indtaegter.fri_kost_og_logi is not None:
+        if indtægter.fri_kost_og_logi is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_FRI_KOST_OG_LOGI,
-                _to_danish_decimal(indtaegter.fri_kost_og_logi),
+                _to_danish_decimal(indtægter.fri_kost_og_logi),
             )
-        if indtaegter.fri_bil is not None:
+        if indtægter.fri_bil is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_FRI_BIL,
-                _to_danish_decimal(indtaegter.fri_bil),
+                _to_danish_decimal(indtægter.fri_bil),
             )
-        if indtaegter.fri_telefon is not None:
+        if indtægter.fri_telefon is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_FRI_TELEFON,
-                _to_danish_decimal(indtaegter.fri_telefon),
+                _to_danish_decimal(indtægter.fri_telefon),
             )
-        if indtaegter.sundhedsforsikring_og_gruppeliv is not None:
+        if indtægter.sundhedsforsikring_og_gruppeliv is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_SUNDHEDSFORSIKRING_OG_GRUPPELIV,
-                _to_danish_decimal(indtaegter.sundhedsforsikring_og_gruppeliv),
+                _to_danish_decimal(indtægter.sundhedsforsikring_og_gruppeliv),
             )
-        if indtaegter.skattefri_rejse_og_befordringsgodtgoerelse is not None:
+        if indtægter.skattefri_rejse_og_befordringsgodtgoerelse is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_SKATTEFRI_REJSE_OG_BEFORDRINGSGODTGOERELSE,
                 _to_danish_decimal(
-                    indtaegter.skattefri_rejse_og_befordringsgodtgoerelse
+                    indtægter.skattefri_rejse_og_befordringsgodtgoerelse
                 ),
             )
-        if indtaegter.opsparet_feriefridage is not None:
+        if indtægter.opsparet_feriefridage is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_OPSPARET_FERIEFRIDAGE,
-                _to_danish_decimal(indtaegter.opsparet_feriefridage),
+                _to_danish_decimal(indtægter.opsparet_feriefridage),
             )
-        if indtaegter.ydelsesarter:
+        if indtægter.ydelsesarter:
             self._page.wait_for_selector(
                 KYSelectors.Borgere.INDTÆGTER_YDELSESARTER, timeout=30000
             )
             self._page.select_option(
                 KYSelectors.Borgere.INDTÆGTER_YDELSESARTER,
-                label=indtaegter.ydelsesarter.value,
+                label=indtægter.ydelsesarter.value,
             )
 
         self._page.locator(KYSelectors.Borgere.INDTÆGTER_GEM).click(timeout=30000)
@@ -264,7 +264,7 @@ class BorgereClient:
             KYSelectors.Borgere.UBEHANDLEDE_OPGAVER, timeout=30000
         )
 
-    def åbn_opgave(self, cpr: str, opgave_id: str) -> None:
+    def åbn_opgave(self, cpr: str, opgave_id: str) -> list[dict]:
         naviger_til_borger(self._page, cpr, timeout=30000)
         self._page.click(
             f'{KYSelectors.Borgere.UBEHANDLEDE_OPGAVER} tbody tr[data-id="{opgave_id}"]',
@@ -272,6 +272,9 @@ class BorgereClient:
         )
 
         self._page.wait_for_selector("div#initierende_haendelser", timeout=30000)
+        self._page.wait_for_selector("table#initierende-haendelser-table", timeout=30000)
+
+        return extract_header_table(self._page, "table#initierende-haendelser-table")
 
     def afbryd_opgave(self, cpr: str, opgave_id: str, afbryd_type: AfbrydType) -> None:
         if self._page.locator("div#initierende_haendelser").count() == 0:

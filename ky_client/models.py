@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Literal, Optional
 
 
-class IndtaegterType(Enum):
+class IndtægterType(Enum):
     ANDEN_BRUTTOINDTAEGT = "Anden bruttoindtægt"
     ANDEN_INDTAEGT_NETTO = "Anden indtægt Netto"
     ARBEJDSINDTAEGT_USTOETTET = "Arbejdsindtægt ved ustøttet beskæftigelse"
@@ -44,10 +44,10 @@ class AfbrydType(Enum):
 
 
 @dataclass
-class Indtaegter:
+class Indtægter:
     cvr_se_nummer: Optional[str] = None
     virksomhedsnavn: Optional[str] = None
-    indtaegtstype: IndtaegterType = field(default=IndtaegterType.VAELG_FRA_LISTE)
+    indtaegtstype: IndtægterType = field(default=IndtægterType.VAELG_FRA_LISTE)
     beloeb: float = 0.0
     dispositionsdato: str = ""
     periode_fra: str = ""

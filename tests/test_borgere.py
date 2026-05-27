@@ -1,13 +1,14 @@
+import random
+
 from ky_client import KYClientManager
 from pathlib import Path
 from ky_client.models import (
     AfbrydType,
-    Indtaegter,
-    IndtaegterType,
+    Indtægter,
+    IndtægterType,
     RedigerOpgave,
     Ydelsesarter,
 )
-import random
 
 
 def test_hent_borgersag(ky_manager: KYClientManager, test_cpr: str):
@@ -29,8 +30,8 @@ def test_upload_dokument(ky_manager: KYClientManager, test_cpr: str):
 
 
 def test_indtast_indtægter(ky_manager: KYClientManager, test_cpr: str):
-    indtaegter = Indtaegter(
-        indtaegtstype=random.choice(list(IndtaegterType)),
+    indtaegter = Indtægter(
+        indtaegtstype=random.choice(list(IndtægterType)),
         beloeb=round(random.uniform(1000, 10000), 2),
         dispositionsdato="31-05-2026",
         periode_fra="01-05-2026",
@@ -54,8 +55,10 @@ def test_rediger_opgave(ky_manager: KYClientManager, test_cpr: str):
 
 
 def test_åbn_opgave(ky_manager: KYClientManager, test_cpr: str):
-    ky_manager.borgere.åbn_opgave(test_cpr, "1acc834d-b4c5-47f7-a7c2-13b631b52e27")
-
+    initierede_hændelser = ky_manager.borgere.åbn_opgave(
+        test_cpr, "1491ae3e-c7f1-4b4b-adf9-646d2a213563"
+    )
+    assert isinstance(initierede_hændelser, list)
 
 def test_afbryd_opgave(ky_manager: KYClientManager, test_cpr: str):
     ky_manager.borgere.afbryd_opgave(
