@@ -1,6 +1,10 @@
 import logging
 
-from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError, Error as PlaywrightError
+from playwright.sync_api import (
+    Page,
+    TimeoutError as PlaywrightTimeoutError,
+    Error as PlaywrightError,
+)
 
 from ky_client.selectors import KYSelectors
 
@@ -103,9 +107,11 @@ def extract_datatable_all_pages(page: Page, table_id: str) -> list[dict[str, str
             page.wait_for_selector(f"{table_selector} tbody", timeout=timeout_ms)
         except PlaywrightError as e:
             if page.is_closed():
-                raise RuntimeError(f"Page was closed while waiting for table '{table_id}'") from e
+                raise RuntimeError(
+                    f"Page was closed while waiting for table '{table_id}'"
+                ) from e
             raise
-        
+
         try:
             page.wait_for_function(
                 """(id) => {
@@ -119,8 +125,12 @@ def extract_datatable_all_pages(page: Page, table_id: str) -> list[dict[str, str
             )
         except PlaywrightError as e:
             if page.is_closed():
-                raise RuntimeError(f"Page was closed while waiting for table '{table_id}' to be ready") from e
-            logger.warning(f"Table '{table_id}' processing check timed out, continuing anyway")
+                raise RuntimeError(
+                    f"Page was closed while waiting for table '{table_id}' to be ready"
+                ) from e
+            logger.warning(
+                f"Table '{table_id}' processing check timed out, continuing anyway"
+            )
 
     _wait_ready()
 
@@ -247,12 +257,14 @@ def navigate_to(
         page.wait_for_load_state("networkidle", timeout=timeout)
     except PlaywrightError:
         logger.debug("Page did not reach networkidle state, continuing anyway")
-    
+
     try:
         page.wait_for_selector(wait_for_selector, timeout=timeout)
     except PlaywrightError as e:
         if page.is_closed():
-            raise RuntimeError(f"Page was closed while waiting for '{wait_for_selector}'") from e
+            raise RuntimeError(
+                f"Page was closed while waiting for '{wait_for_selector}'"
+            ) from e
         raise
 
 
@@ -267,7 +279,9 @@ def naviger_til_borger(page: Page, cpr: str, timeout: int = 30000) -> None:
     try:
         page.wait_for_load_state("networkidle", timeout=timeout)
     except PlaywrightError:
-        logger.debug("Page did not reach networkidle state after search, continuing anyway")
+        logger.debug(
+            "Page did not reach networkidle state after search, continuing anyway"
+        )
 
     try:
         page.wait_for_selector(KYSelectors.Borgere.PERSON_OPLYSNINGER, timeout=timeout)
@@ -279,19 +293,27 @@ def naviger_til_borger(page: Page, cpr: str, timeout: int = 30000) -> None:
         search_input.click()
         search_input.fill(cpr)
         page.keyboard.press("Enter")
-        
+
         try:
             page.wait_for_load_state("networkidle", timeout=timeout)
         except PlaywrightError:
-            logger.debug("Page did not reach networkidle state after retry, continuing anyway")
-        
+            logger.debug(
+                "Page did not reach networkidle state after retry, continuing anyway"
+            )
+
         try:
-            page.wait_for_selector(KYSelectors.Borgere.PERSON_OPLYSNINGER, timeout=timeout)
+            page.wait_for_selector(
+                KYSelectors.Borgere.PERSON_OPLYSNINGER, timeout=timeout
+            )
         except PlaywrightError as e:
             if page.is_closed():
-                raise RuntimeError(f"Page was closed while searching for CPR '{cpr}'") from e
+                raise RuntimeError(
+                    f"Page was closed while searching for CPR '{cpr}'"
+                ) from e
             raise
     except PlaywrightError as e:
         if page.is_closed():
-            raise RuntimeError(f"Page was closed while searching for CPR '{cpr}'") from e
+            raise RuntimeError(
+                f"Page was closed while searching for CPR '{cpr}'"
+            ) from e
         raise

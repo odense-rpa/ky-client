@@ -16,8 +16,13 @@ def test_hent_borgersag(ky_manager: KYClientManager, test_cpr: str):
     assert isinstance(result, dict)
 
 
-def test_hent_ferie_oplysninger(ky_manager: KYClientManager, test_cpr: str):
-    result = ky_manager.borgere.hent_ferie_oplysninger(test_cpr)
+def test_hent_ferieoplysninger(ky_manager: KYClientManager, test_cpr: str):
+    result = ky_manager.borgere.hent_ferieoplysninger(test_cpr)
+    assert isinstance(result, dict)
+
+
+def test_hent_skatteoplysninger(ky_manager: KYClientManager, test_cpr: str):
+    result = ky_manager.borgere.hent_skatteoplysninger(test_cpr)
     assert isinstance(result, dict)
 
 
@@ -59,6 +64,7 @@ def test_åbn_opgave(ky_manager: KYClientManager, test_cpr: str):
         test_cpr, "1491ae3e-c7f1-4b4b-adf9-646d2a213563"
     )
     assert isinstance(initierede_hændelser, list)
+
 
 def test_afbryd_opgave(ky_manager: KYClientManager, test_cpr: str):
     ky_manager.borgere.afbryd_opgave(

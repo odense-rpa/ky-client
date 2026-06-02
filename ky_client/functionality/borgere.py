@@ -11,12 +11,24 @@ from ky_client.utils import (
     naviger_til_borger,
 )
 from ky_client.models import Indtægter, RedigerOpgave, AfbrydType
+from typing import Optional
 
 
 class BorgereClient:
     def __init__(self, ky_client: KYClient) -> None:
         self._page: Page = ky_client.page
         self.p_id: str | None = None
+
+    def _opret_journalnotat(self, journalnotat: dict) -> None:
+        # Fravælg sag - hvis sag er valgt
+        # Vælg sager
+        # Søg
+        # Check for søgeresultat
+        # Vælg første søgeresultat
+        # Vælg skabelon
+        # Søg
+        # Indsæt journalnotat
+        pass
 
     def hent_borgersag(self, cpr: str) -> dict:
         naviger_til_borger(self._page, cpr, timeout=30000)
@@ -25,36 +37,52 @@ class BorgereClient:
 
         data = {
             "pId": match.group(1) if match else None,
-            "Personoplysninger": extract_keyed_table(
-                self._page, "table#person-oplysninger"
-            ),
-            "Relationer": extract_keyed_table(
-                self._page, "table#person-overblik-relationer"
-            ),
-            "Livssituation": extract_keyed_table(
-                self._page, "table#person-overblik-livssituation"
-            ),
-            "Ubehandlede opgaver": extract_header_table(
-                self._page, "table#ubehandlede-opgaver"
-            ),
-            "Sagsoversigt": extract_header_table(self._page, "table#sagsoversigt"),
-            "Seneste hændelser": extract_header_table(
-                self._page, "table#seneste-haendelser"
-            ),
         }
+
+        keyed_tables = {
+            "Personoplysninger": "table#person-oplysninger",
+            "Relationer": "table#person-overblik-relationer",
+            "Livssituation": "table#person-overblik-livssituation",
+        }
+        for key, selector in keyed_tables.items():
+            if self._page.locator(selector).is_visible():
+                data[key] = extract_keyed_table(self._page, selector)
+
+        header_tables = {
+            "Ferier": "table#ferier",
+            "Ubehandlede opgaver": "table#ubehandlede-opgaver",
+            "Sagsoversigt": "table#sagsoversigt",
+            "Seneste hændelser": "table#seneste-haendelser",
+        }
+        for key, selector in header_tables.items():
+            if self._page.locator(selector).is_visible():
+                data[key] = extract_header_table(self._page, selector)
 
         return data
 
-    def luk_borgersag(self, p_id: str) -> None:
+    def luk_borgersag(self, p_id: str) -> bool:
         self._page.click(f'li.tab.topmenu-tab i[data-entity-id="{p_id}"]')
+
+        if self._page.locator(KYSelectors.Borgere.LUK_ALLE_OPGAVER_FORM).is_visible():
+            self._page.wait_for_selector(
+                KYSelectors.Borgere.AFBRYD_OPGAVE_AFBRYD_OG_GEM, timeout=3000
+            )
+            self._page.click(
+                KYSelectors.Borgere.AFBRYD_OPGAVE_AFBRYD_OG_GEM, timeout=30000
+            )
+            return False
 
         self._page.wait_for_selector(
             KYSelectors.Opgaveindbakke.VÆLG_OPGAVEPAKKE, timeout=5000
         )
 
-        # TODO: If a popup appears, saying that multiple tasks are unhandled, find a way to close them all.
+        return True
 
-    def hent_ferie_oplysninger(self, cpr: str) -> dict:
+    def er_borger_låst(self, cpr: str) -> bool:
+        naviger_til_borger(self._page, cpr, timeout=30000)
+        return self._page.locator(KYSelectors.Borgere.LÅST_BANNER).is_visible()
+
+    def hent_ferieoplysninger(self, cpr: str) -> dict:
         naviger_til_borger(self._page, cpr, timeout=30000)
         navigate_to(
             self._page,
@@ -74,6 +102,34 @@ class BorgereClient:
             ),
             "Ferieperioder fra Feriekonto": extract_header_table(
                 self._page, KYSelectors.Borgere.FERIEPERIODER_FRA_FERIEKONTO
+            ),
+        }
+
+        return data
+
+    def hent_skatteoplysninger(self, cpr: str) -> dict:
+        naviger_til_borger(self._page, cpr, timeout=30000)
+        navigate_to(
+            self._page,
+            KYSelectors.Borgere.SKAT,
+            KYSelectors.Borgere.SKATTEKORT_FRA_EINDKOMST,
+        )
+
+        data = {
+            "Skattekort fra eIndkomst": extract_header_table(
+                self._page, KYSelectors.Borgere.SKATTEKORT_FRA_EINDKOMST
+            ),
+            "Kommende skatteindberetninger": extract_header_table(
+                self._page, KYSelectors.Borgere.KOMMENDE_SKATTEINDBERETNINGER
+            ),
+            "Historiske skatteindberetninger": extract_header_table(
+                self._page, KYSelectors.Borgere.HISTORISKE_SKATTEINDBERETNINGER
+            ),
+            "Overskydende skat": extract_keyed_table(
+                self._page, KYSelectors.Borgere.OVERSKYDENDE_SKAT
+            ),
+            "Skat": extract_keyed_table(
+                self._page, KYSelectors.Borgere.OPLYSNINGER_SKAT
             ),
         }
 
@@ -104,7 +160,9 @@ class BorgereClient:
             "button.btn-submit-form[data-url='/entitet/sag/submitUploads/']"
         )
 
-    def indtast_indtægter(self, cpr: str, indtægter: Indtægter) -> None:
+    def indtast_indtægter(
+        self, cpr: str, indtægter: Indtægter, journalnotat: Optional[dict] = None
+    ) -> None:
         naviger_til_borger(self._page, cpr, timeout=30000)
         self._page.locator(KYSelectors.Borgere.HANDLINGER_DROPDOWN).click(timeout=30000)
         self._page.locator(KYSelectors.Borgere.HANDLINGER_SUBPROCESSER).click(
@@ -254,6 +312,11 @@ class BorgereClient:
             KYSelectors.Borgere.INDTÆGTER_BELOEB, state="hidden", timeout=30000
         )
 
+        if journalnotat:
+            test = {"Indhold": "", "Sagstype": "", "Skabelongruppe": "", "Skabelon": ""}
+
+            self._opret_journalnotat(test)
+
         self._page.locator(KYSelectors.Borgere.INDTÆGTER_GODKEND).click(timeout=30000)
         # Wait for Godkend to disappear before clicking Luk to avoid async race
         self._page.wait_for_selector(
@@ -272,7 +335,9 @@ class BorgereClient:
         )
 
         self._page.wait_for_selector("div#initierende_haendelser", timeout=30000)
-        self._page.wait_for_selector("table#initierende-haendelser-table", timeout=30000)
+        self._page.wait_for_selector(
+            "table#initierende-haendelser-table", timeout=30000
+        )
 
         return extract_header_table(self._page, "table#initierende-haendelser-table")
 

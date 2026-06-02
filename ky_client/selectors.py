@@ -24,6 +24,7 @@ class KYSelectors:
         SAGSOVERSIGT = "table#sagsoversigt"
         UBEHANDLEDE_OPGAVER = "table#ubehandlede-opgaver"
         LIVSSITUATION = "table#person-overblik-livssituation"
+        LÅST_BANNER = 'div[data-textkey="system.type.advarsel_item.reserveret_af"]'
 
         # Navigation
         OVERBLIK = _nav("person_overblik")
@@ -46,6 +47,13 @@ class KYSelectors:
         FRAVÆR_FRA_JOBCENTER = "table#fravaer-table"
         FERIEKONTO = "table#feriekonto"
         FERIEPERIODER_FRA_FERIEKONTO = "table#ferieperioder"
+
+        # Skat
+        SKATTEKORT_FRA_EINDKOMST = "table#skattekorttable"
+        KOMMENDE_SKATTEINDBERETNINGER = "table#kommendeskatteindberetninger"
+        HISTORISKE_SKATTEINDBERETNINGER = "table#historiskeskatteindberetninger"
+        OVERSKYDENDE_SKAT = "table#overskydendeskat"
+        OPLYSNINGER_SKAT = "table.select-year-skat-table"
 
         # Handlinger
         HANDLINGER_DROPDOWN = "li#handlinger-dropdown a.dropdown-toggle"
@@ -132,3 +140,6 @@ class KYSelectors:
         AFBRYD_OPGAVE_AFBRYD_OG_SLET = 'button.btn.btn-primary[data-textkey="fagsystem.person.opgave.afbryd.modal.afbryd_og_slet.btn"]'
         AFBRYD_OPGAVE_AFBRYD_OG_GEM = 'button.btn.btn-primary[data-textkey="fagsystem.person.opgave.afbryd.modal.afbryd_og_gem.btn"]'
         AFBRYD_OPGAVE_AABN_MODAL = 'a.btn.btn-primary.margin-right:has(span[data-textkey="fagsystem.person.opgave.handling.afbryd"])'
+
+        # Luk alle opgaver
+        LUK_ALLE_OPGAVER_FORM = "form#lukAlleOpgForm"
