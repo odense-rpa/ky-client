@@ -74,6 +74,14 @@ class Indtægter:
 
 
 @dataclass
+class Journalnotat:
+    indhold: str
+    sagstype: str
+    skabelongruppe: str
+    skabelon: str
+    
+
+@dataclass
 class RedigerOpgave:
     prioritet: Literal["Lav", "Mellem", "Høj"] = "Lav"
     forfalds_dato: str = ""

@@ -1,5 +1,6 @@
 import re
 
+from decimal import Decimal
 from pathlib import Path
 from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError
 from ky_client.client import KYClient
@@ -10,7 +11,7 @@ from ky_client.utils import (
     navigate_to,
     naviger_til_borger,
 )
-from ky_client.models import Indtægter, RedigerOpgave, AfbrydType
+from ky_client.models import Indtægter, RedigerOpgave, AfbrydType, Journalnotat
 from typing import Optional
 
 
@@ -19,16 +20,102 @@ class BorgereClient:
         self._page: Page = ky_client.page
         self.p_id: str | None = None
 
-    def _opret_journalnotat(self, journalnotat: dict) -> None:
-        # Fravælg sag - hvis sag er valgt
-        # Vælg sager
-        # Søg
-        # Check for søgeresultat
-        # Vælg første søgeresultat
-        # Vælg skabelon
-        # Søg
+    def _opret_journalnotat(self, journalnotat: Journalnotat) -> None:
+        # Håndter collapse
+        expand_toggle = self._page.locator(
+            KYSelectors.Borgere.JOURNALNOTAT_EXPAND_KOLLAPSET
+        )
+        if expand_toggle.count() > 0:
+            expand_toggle.first.click(timeout=30000)
+        
+        # Håndter i forvejen valgte sagstyper, fremsøg sagstype og vælg på ny
+        sagsvaelger_input = self._page.locator(
+            KYSelectors.Borgere.JOURNALNOTAT_SAGSVAELGER_INPUT
+        ).first
+
+        sagsvaelger_input.click(timeout=30000)
+
+        if sagsvaelger_input.count() > 0:
+            valgt_sag_tekst = sagsvaelger_input.input_value().strip()
+            if valgt_sag_tekst == "1 sag valgt":
+                valgt_aktiv_sag = self._page.locator(
+                    KYSelectors.Borgere.JOURNALNOTAT_AKTIV_VALGT_SAG
+                ).first
+                if valgt_aktiv_sag.count() > 0:                    
+                    valgt_aktiv_sag.click(timeout=30000)                    
+
+        self._page.fill(
+            KYSelectors.Borgere.JOURNALNOTAT_SAGSVAELGER_SOEG,
+            journalnotat.sagstype,
+        )
+        self._page.evaluate(
+            """() => {
+                const el = document.querySelector('input.form-control.sagsvaelger-soeg');
+                if (!el) {
+                    return;
+                }
+
+                if (window.$) {
+                    window.$(el).trigger('keyup');
+                    return;
+                }
+
+                el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
+            }"""
+        )
+        self._page.wait_for_selector(
+            KYSelectors.Borgere.JOURNALNOTAT_SAGSVAELGER_FOERSTE_RESULTAT,
+            timeout=30000,
+        )
+        self._page.locator(
+            KYSelectors.Borgere.JOURNALNOTAT_SAGSVAELGER_FOERSTE_RESULTAT
+        ).first.click(timeout=30000)
+
+        sagsvaelger_input.click(timeout=30000)
+
+        # Vælg skabelongruppe og skabelon
+        self._page.click(KYSelectors.Borgere.JOURNALNOTAT_VAELG_SKABELON, timeout=30000)
+        self._page.fill(
+            KYSelectors.Borgere.JOURNALNOTAT_SKABELONGRUPPE_SOEG,
+            journalnotat.skabelongruppe,
+        )
+        self._page.evaluate(
+            """() => {
+                const el = document.querySelector('#journalnotat-group input.form-control.skabelonvaelger-soeg');
+                if (!el) {
+                    return;
+                }
+
+                if (window.$) {
+                    window.$(el).trigger('keyup');
+                    return;
+                }
+
+                el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
+            }"""
+        )
+
+        skabelon_titel = journalnotat.skabelon.replace('"', '\\"')
+        skabelon_selector = (
+            "ul.skabelonlist li.hg.cell[style=''][data-noegle*='journalnotatskabelon_gruppe'] "
+            f"li[data-titel=\"{skabelon_titel}\"]"
+        )
+        self._page.wait_for_selector(skabelon_selector, timeout=5000)
+        self._page.click(skabelon_selector, timeout=30000)
+
         # Indsæt journalnotat
-        pass
+        self._page.wait_for_function(
+            """() => {
+                return typeof tinymce !== 'undefined' && !!tinymce.get('tilfoejedeJournalnotater0.notat');
+            }""",
+            timeout=5000,
+        )
+        self._page.evaluate(
+            """(indhold) => {
+                tinymce.get('tilfoejedeJournalnotater0.notat').setContent(indhold);
+            }""",
+            journalnotat.indhold,
+        )
 
     def hent_borgersag(self, cpr: str) -> dict:
         naviger_til_borger(self._page, cpr, timeout=30000)
@@ -161,7 +248,7 @@ class BorgereClient:
         )
 
     def indtast_indtægter(
-        self, cpr: str, indtægter: Indtægter, journalnotat: Optional[dict] = None
+        self, cpr: str, indtægter: Indtægter, journalnotat: Optional[Journalnotat] = None
     ) -> None:
         naviger_til_borger(self._page, cpr, timeout=30000)
         self._page.locator(KYSelectors.Borgere.HANDLINGER_DROPDOWN).click(timeout=30000)
@@ -195,7 +282,7 @@ class BorgereClient:
         if indtægter.beloeb is not None:
             self._page.fill(
                 KYSelectors.Borgere.INDTÆGTER_BELOEB,
-                str(indtægter.beloeb),
+                _to_danish_decimal(indtægter.beloeb.quantize(Decimal("0.01"))),
             )
         if indtægter.dispositionsdato:
             self._page.fill(
@@ -313,9 +400,7 @@ class BorgereClient:
         )
 
         if journalnotat:
-            test = {"Indhold": "", "Sagstype": "", "Skabelongruppe": "", "Skabelon": ""}
-
-            self._opret_journalnotat(test)
+            self._opret_journalnotat(journalnotat)
 
         self._page.locator(KYSelectors.Borgere.INDTÆGTER_GODKEND).click(timeout=30000)
         # Wait for Godkend to disappear before clicking Luk to avoid async race
@@ -496,6 +581,6 @@ class BorgereClient:
         )
 
 
-def _to_danish_decimal(val: float) -> str:
+def _to_danish_decimal(val: float | Decimal) -> str:
     # Converts 6509.73 -> '6.509,73' (Danish format)
     return f"{val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")

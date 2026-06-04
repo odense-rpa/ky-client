@@ -64,6 +64,29 @@ class KYSelectors:
 
         # Handlinger - Indtægter
         INDTÆGTER_MANUEL_INDTASTNING = 'button[data-onclick*="/opgave/indtaegter/formFields"]:has(span[data-textkey="system.medtagkoncept.add"])'
+        JOURNALNOTAT_EXPAND_KOLLAPSET = (
+            'div.journalnotat_instans-header a[data-toggle="collapse"]'
+        )
+        JOURNALNOTAT_SAGSVAELGER_INPUT = "input.sagsvaelger-input"
+        JOURNALNOTAT_AKTIV_VALGT_SAG = '#sagsvaelgertable tr.selected[data-tilstand="aktiv"]'
+        JOURNALNOTAT_AKTIV_CHECKBOX_CHECKED = (
+            'input[type="checkbox"][data-tilstand="aktiv"][checked="checked"]'
+        )
+        JOURNALNOTAT_PASSIV_CHECKBOX_CHECKED = (
+            'input[type="checkbox"][data-tilstand="passiv"]:checked'
+        )
+        JOURNALNOTAT_PASSIV_CHECKBOX_UNCHECKED = (
+            'input[type="checkbox"][data-tilstand="passiv"]:not(:checked)'
+        )
+        JOURNALNOTAT_SAGSVAELGER_SOEG = "input.sagsvaelger-soeg"
+        JOURNALNOTAT_SAGSVAELGER_FOERSTE_RESULTAT = "#sagsvaelgertable tbody tr"
+        JOURNALNOTAT_VAELG_SKABELON = (
+            'input[data-textkey="fagsystem.person.opgave.journalnotat_instans.vaelg_skabelon"]'
+        )
+        JOURNALNOTAT_SKABELONGRUPPE_SOEG = (
+            "#journalnotat-group input.form-control.skabelonvaelger-soeg"
+        )
+        JOURNALNOTAT_SKABELONGRUPPE_FOERSTE_RESULTAT = "ul.skabelonlist li.hg.cell li"
         INDTÆGTER_CVR_SE_NUMMER = "input#indtaegterTable\\.cvrNummer\\.valueString"
         INDTÆGTER_VIRKSOMHEDSNAVN = "input#indtaegterTable\\.cvrNavn\\.valueString"
         INDTÆGTER_TYPE = "select#indtaegterTable\\.indtaegtsType\\.valueString"

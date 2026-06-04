@@ -1,9 +1,11 @@
 import random
+from decimal import Decimal
 
 from ky_client import KYClientManager
 from pathlib import Path
 from ky_client.models import (
     AfbrydType,
+    Journalnotat,
     Indtægter,
     IndtægterType,
     RedigerOpgave,
@@ -37,13 +39,21 @@ def test_upload_dokument(ky_manager: KYClientManager, test_cpr: str):
 def test_indtast_indtægter(ky_manager: KYClientManager, test_cpr: str):
     indtaegter = Indtægter(
         indtaegtstype=random.choice(list(IndtægterType)),
-        beloeb=round(random.uniform(1000, 10000), 2),
+        beloeb=Decimal(str(round(random.uniform(1000, 10000), 2))),
         dispositionsdato="31-05-2026",
         periode_fra="01-05-2026",
         periode_til="31-05-2026",
         ydelsesarter=Ydelsesarter.HJAELP_TIL_FORSOERGGELSE,
     )
-    ky_manager.borgere.indtast_indtægter(test_cpr, indtaegter)
+
+    journalnotat = Journalnotat(
+        indhold="<b>Indtastning af indtægter for testformål</b>",
+        sagstype="HENV",
+        skabelongruppe="KH",
+        skabelon="Agterskrivelse - feriepenge",
+    )
+
+    ky_manager.borgere.indtast_indtægter(test_cpr, indtaegter, journalnotat)
 
 
 def test_rediger_opgave(ky_manager: KYClientManager, test_cpr: str):
