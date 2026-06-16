@@ -79,7 +79,7 @@ class Journalnotat:
     sagstype: str
     skabelongruppe: str
     skabelon: str
-    
+
 
 @dataclass
 class RedigerOpgave:

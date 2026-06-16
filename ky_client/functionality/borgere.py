@@ -27,7 +27,7 @@ class BorgereClient:
         )
         if expand_toggle.count() > 0:
             expand_toggle.first.click(timeout=30000)
-        
+
         # Håndter i forvejen valgte sagstyper, fremsøg sagstype og vælg på ny
         sagsvaelger_input = self._page.locator(
             KYSelectors.Borgere.JOURNALNOTAT_SAGSVAELGER_INPUT
@@ -41,8 +41,8 @@ class BorgereClient:
                 valgt_aktiv_sag = self._page.locator(
                     KYSelectors.Borgere.JOURNALNOTAT_AKTIV_VALGT_SAG
                 ).first
-                if valgt_aktiv_sag.count() > 0:                    
-                    valgt_aktiv_sag.click(timeout=30000)                    
+                if valgt_aktiv_sag.count() > 0:
+                    valgt_aktiv_sag.click(timeout=30000)
 
         self._page.fill(
             KYSelectors.Borgere.JOURNALNOTAT_SAGSVAELGER_SOEG,
@@ -98,7 +98,7 @@ class BorgereClient:
         skabelon_titel = journalnotat.skabelon.replace('"', '\\"')
         skabelon_selector = (
             "ul.skabelonlist li.hg.cell[style=''][data-noegle*='journalnotatskabelon_gruppe'] "
-            f"li[data-titel=\"{skabelon_titel}\"]"
+            f'li[data-titel="{skabelon_titel}"]'
         )
         self._page.wait_for_selector(skabelon_selector, timeout=5000)
         self._page.click(skabelon_selector, timeout=30000)
@@ -248,7 +248,10 @@ class BorgereClient:
         )
 
     def indtast_indtægter(
-        self, cpr: str, indtægter: Indtægter, journalnotat: Optional[Journalnotat] = None
+        self,
+        cpr: str,
+        indtægter: Indtægter,
+        journalnotat: Optional[Journalnotat] = None,
     ) -> None:
         naviger_til_borger(self._page, cpr, timeout=30000)
         self._page.locator(KYSelectors.Borgere.HANDLINGER_DROPDOWN).click(timeout=30000)

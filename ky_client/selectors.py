@@ -68,7 +68,9 @@ class KYSelectors:
             'div.journalnotat_instans-header a[data-toggle="collapse"]'
         )
         JOURNALNOTAT_SAGSVAELGER_INPUT = "input.sagsvaelger-input"
-        JOURNALNOTAT_AKTIV_VALGT_SAG = '#sagsvaelgertable tr.selected[data-tilstand="aktiv"]'
+        JOURNALNOTAT_AKTIV_VALGT_SAG = (
+            '#sagsvaelgertable tr.selected[data-tilstand="aktiv"]'
+        )
         JOURNALNOTAT_AKTIV_CHECKBOX_CHECKED = (
             'input[type="checkbox"][data-tilstand="aktiv"][checked="checked"]'
         )
@@ -79,10 +81,10 @@ class KYSelectors:
             'input[type="checkbox"][data-tilstand="passiv"]:not(:checked)'
         )
         JOURNALNOTAT_SAGSVAELGER_SOEG = "input.sagsvaelger-soeg"
-        JOURNALNOTAT_SAGSVAELGER_FOERSTE_RESULTAT = '#sagsvaelgertable tbody tr:not([style*="display: none"])'
-        JOURNALNOTAT_VAELG_SKABELON = (
-            'input[data-textkey="fagsystem.person.opgave.journalnotat_instans.vaelg_skabelon"]'
+        JOURNALNOTAT_SAGSVAELGER_FOERSTE_RESULTAT = (
+            '#sagsvaelgertable tbody tr:not([style*="display: none"])'
         )
+        JOURNALNOTAT_VAELG_SKABELON = 'input[data-textkey="fagsystem.person.opgave.journalnotat_instans.vaelg_skabelon"]'
         JOURNALNOTAT_SKABELONGRUPPE_SOEG = (
             "#journalnotat-group input.form-control.skabelonvaelger-soeg"
         )
