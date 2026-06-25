@@ -61,6 +61,7 @@ class KYSelectors:
         HANDLINGER_SUBPROCESSER_INDTÆGTER = (
             'a.handlinger-leaf[data-textkey="system.type.haendelse_type.hd_indtaegter"]'
         )
+        OPGAVE_LOADER = "div#opgave-loader"
 
         # Handlinger - Indtægter
         INDTÆGTER_MANUEL_INDTASTNING = 'button[data-onclick*="/opgave/indtaegter/formFields"]:has(span[data-textkey="system.medtagkoncept.add"])'
@@ -164,6 +165,7 @@ class KYSelectors:
         AFBRYD_OPGAVE_ANNULLER = 'button.btn.btn-primary[data-textkey="fagsystem.person.opgave.afbryd.modal.annuller.btn"]'
         AFBRYD_OPGAVE_AFBRYD_OG_SLET = 'button.btn.btn-primary[data-textkey="fagsystem.person.opgave.afbryd.modal.afbryd_og_slet.btn"]'
         AFBRYD_OPGAVE_AFBRYD_OG_GEM = 'button.btn.btn-primary[data-textkey="fagsystem.person.opgave.afbryd.modal.afbryd_og_gem.btn"]'
+        LUK_ALLE_OPGAVER_AFBRYD_OG_GEM = 'button.btn.btn-primary[data-textkey="fagsystem.entitet.luk_alle_opgaver.afbryd_og_gem.btn"]'
         AFBRYD_OPGAVE_AABN_MODAL = 'a.btn.btn-primary.margin-right:has(span[data-textkey="fagsystem.person.opgave.handling.afbryd"])'
 
         # Luk alle opgaver

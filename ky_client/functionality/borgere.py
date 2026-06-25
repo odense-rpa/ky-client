@@ -20,6 +20,25 @@ class BorgereClient:
         self._page: Page = ky_client.page
         self.p_id: str | None = None
 
+    def _wait_for_opgave_loader_to_clear(self, timeout: int = 30000) -> None:
+        self._page.wait_for_function(
+            """(selector) => {
+                const loader = document.querySelector(selector);
+                if (!loader) {
+                    return true;
+                }
+
+                const style = window.getComputedStyle(loader);
+                const hidden =
+                    style.display === 'none' ||
+                    style.visibility === 'hidden' ||
+                    style.opacity === '0';
+                return hidden || style.pointerEvents === 'none';
+            }""",
+            arg=KYSelectors.Borgere.OPGAVE_LOADER,
+            timeout=timeout,
+        )
+
     def _opret_journalnotat(self, journalnotat: Journalnotat) -> None:
         # Håndter collapse
         expand_toggle = self._page.locator(
@@ -150,20 +169,29 @@ class BorgereClient:
     def luk_borgersag(self, p_id: str) -> bool:
         self._page.click(f'li.tab.topmenu-tab i[data-entity-id="{p_id}"]')
 
-        if self._page.locator(KYSelectors.Borgere.LUK_ALLE_OPGAVER_FORM).is_visible():
+        try:
             self._page.wait_for_selector(
-                KYSelectors.Borgere.AFBRYD_OPGAVE_AFBRYD_OG_GEM, timeout=3000
+                KYSelectors.Opgaveindbakke.VÆLG_OPGAVEPAKKE, timeout=5000
             )
-            self._page.click(
-                KYSelectors.Borgere.AFBRYD_OPGAVE_AFBRYD_OG_GEM, timeout=30000
-            )
-            return False
+            return True
+        except PlaywrightTimeoutError:
+            pass
 
         self._page.wait_for_selector(
-            KYSelectors.Opgaveindbakke.VÆLG_OPGAVEPAKKE, timeout=5000
+            KYSelectors.Borgere.LUK_ALLE_OPGAVER_FORM, timeout=5000
         )
 
-        return True
+        for selector in (
+            KYSelectors.Borgere.AFBRYD_OPGAVE_AFBRYD_OG_GEM,
+            KYSelectors.Borgere.LUK_ALLE_OPGAVER_AFBRYD_OG_GEM,
+        ):
+            if self._page.locator(selector).is_visible():
+                self._page.click(selector, timeout=30000)
+                return False
+
+        raise PlaywrightTimeoutError(
+            "Close-all-tasks popup was shown, but no known 'Afbryd og gem' button was visible."
+        )
 
     def er_borger_låst(self, cpr: str) -> bool:
         naviger_til_borger(self._page, cpr, timeout=30000)
@@ -407,9 +435,11 @@ class BorgereClient:
 
         self._page.locator(KYSelectors.Borgere.INDTÆGTER_GODKEND).click(timeout=30000)
         # Wait for Godkend to disappear before clicking Luk to avoid async race
+        # TODO: Endless spinner appeared here.
         self._page.wait_for_selector(
             KYSelectors.Borgere.INDTÆGTER_GODKEND, state="detached", timeout=30000
         )
+        self._wait_for_opgave_loader_to_clear(timeout=30000)
         self._page.locator(KYSelectors.Borgere.INDTÆGTER_LUK).click(timeout=30000)
         self._page.wait_for_selector(
             KYSelectors.Borgere.UBEHANDLEDE_OPGAVER, timeout=30000
@@ -458,6 +488,7 @@ class BorgereClient:
                     KYSelectors.Borgere.GODKEND_OPGAVE_LUK,
                     timeout=1500,
                 )
+                self._wait_for_opgave_loader_to_clear(timeout=30000)
                 self._page.click(KYSelectors.Borgere.GODKEND_OPGAVE_LUK, timeout=30000)
                 return
             except PlaywrightTimeoutError:

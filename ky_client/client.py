@@ -48,7 +48,7 @@ class KYClient:
         self._playwright: Playwright = sync_playwright().start()
         browser_args = [
             "--window-size=1920,1080",
-            "--lang=da-DK",
+            "--lang=da-DK"            
         ]
         self._browser = self._playwright.chromium.launch(
             headless=False,

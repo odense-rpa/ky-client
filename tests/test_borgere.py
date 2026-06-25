@@ -48,18 +48,24 @@ def test_indtast_indtægter(ky_manager: KYClientManager, test_cpr: str):
 
     journalnotat = Journalnotat(
         indhold="Der er modtaget oplysninger fra feriekonto om udbetaling af feriepenge på 173,84 den 03-06-2026. \nDer fremgår ikke aftalt ferie med Jobcenter. \nDer er 15-06-2026 sendt agterskrivelse. \nAgterskrivelsen får virkning som afgørelse fra den 15-06-2026. \nNettoferiepengene 173.84 modregnes i kontanthjælpen i june hvor feriepengene er udbetalt.",
-        sagstype="HTF",
+        sagstype="HENV",
         skabelongruppe="KH",
         skabelon="Agterskrivelse - feriepenge",
     )
 
-    ky_manager.borgere.indtast_indtægter(test_cpr, indtaegter, journalnotat)
+    try:
+        ky_manager.borgere.indtast_indtægter(test_cpr, indtaegter, journalnotat)
+    except Exception as e:
+        print(f"Fejl under indtastning af indtægter: {e}")
+        raise
 
 
 def test_rediger_opgave(ky_manager: KYClientManager, test_cpr: str):
+    borgeroplysninger = ky_manager.borgere.hent_borgersag(test_cpr)
+
     ky_manager.borgere.rediger_opgave(
         cpr=test_cpr,
-        opgave_id="15740507-cb3b-4c6f-b922-ea90e516577d",
+        opgave_id="f9cf463c-3b34-42c4-9ea6-30518cfe6e61",
         ændringer=RedigerOpgave(
             opfølgningsopgavetype="KH - Tyra ferie",
             forfalds_dato=datetime.fromordinal(
@@ -67,6 +73,13 @@ def test_rediger_opgave(ky_manager: KYClientManager, test_cpr: str):
             ).strftime("%d-%m-%Y"),
         ),
     )
+
+    try:
+        ky_manager.borgere.luk_borgersag(borgeroplysninger["pId"])
+    except Exception as e:
+        print(f"Fejl under lukning af borgersag: {e}")
+        raise
+    
 
 
 def test_åbn_opgave(ky_manager: KYClientManager, test_cpr: str):
