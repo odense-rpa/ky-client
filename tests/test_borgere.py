@@ -107,3 +107,11 @@ def test_godkend_opgave(ky_manager: KYClientManager, test_cpr: str):
 def test_luk_borgersag(ky_manager: KYClientManager, test_cpr: str):
     borger_sag = ky_manager.borgere.hent_borgersag(test_cpr)
     ky_manager.borgere.luk_borgersag(borger_sag["pId"])
+    
+def test_åben_opgave_og_hent_info(ky_manager: KYClientManager, test_cpr: str):
+    opgave_id = "5055b15d-ab01-4f97-9a7b-e7db022ae259"
+    
+    response = ky_manager.borgere.åben_opgave_og_hent_info(test_cpr, opgave_id, "Indtægter der skal medtages ved beregning")
+    
+    assert response is not None
+    assert isinstance(response, dict)

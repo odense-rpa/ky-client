@@ -458,6 +458,58 @@ class BorgereClient:
         )
 
         return extract_header_table(self._page, "table#initierende-haendelser-table")
+    
+    def åben_opgave_og_hent_info(self, cpr: str, opgave_id: str, tabelnavn: str) -> dict:
+        """Åbner en opgave og returnerer indholdet af en navngiven tabel samt de initierende hændelser.
+
+        Args:
+            cpr: CPR-nummer på den borger hvis opgave skal åbnes.
+            opgave_id: ID på den opgave der skal åbnes (data-id på tabelrækken).
+            tabelnavn: Den synlige overskrift på den tabel der skal hentes, f.eks.
+                "Løbende indtægter der skal medtages ved beregning".
+
+        Returns:
+            En dict med to nøgler:
+                - "Initierende hændelser": list[dict] med rækkerne fra initierende-haendelser-table.
+                - tabelnavn: list[dict] med rækkerne fra den fundne tabel.
+
+        Raises:
+            ValueError: Hvis ingen tabel med den givne overskrift findes på siden.
+        """
+        if self._page.locator("div#initierende_haendelser").count() == 0:
+            initierende_hændelser = self.åbn_opgave(cpr, opgave_id)
+        else:
+            extract_header_table(self._page, "table#initierende-haendelser-table")
+        
+        
+        table_id = self._page.evaluate(
+            """(tabelnavn) => {
+                const normalize = (s) => (s || '').replace(/\\s+/g, ' ').trim();
+                const wanted = normalize(tabelnavn);
+                const headers = document.querySelectorAll('span.header-title');
+                for (const header of headers) {
+                    if (normalize(header.textContent) === wanted) {
+                        const blockHeading = header.closest('.block-heading');
+                        if (blockHeading) {
+                            const resetLink = blockHeading.querySelector('a.reset-table[data-table-id]');
+                            if (resetLink) {
+                                return resetLink.getAttribute('data-table-id');
+                            }
+                        }
+                    }
+                }
+                return null;
+            }""",
+            tabelnavn,
+        )
+
+        if not table_id:
+            raise ValueError(f"Kunne ikke finde tabel med header: '{tabelnavn}'")
+
+        return {
+            "Initierende hændelser": initierende_hændelser,
+            tabelnavn: extract_header_table(self._page, f"table#{table_id}"),
+        }
 
     def afbryd_opgave(self, cpr: str, opgave_id: str, afbryd_type: AfbrydType) -> None:
         if self._page.locator("div#initierende_haendelser").count() == 0:
