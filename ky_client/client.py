@@ -23,6 +23,7 @@ class KYClient:
         username: str,
         password: str,
         idp: str,
+        headless: bool = False,
     ) -> None:
         self.logger = logging.getLogger(__name__)
         logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -51,7 +52,7 @@ class KYClient:
             "--lang=da-DK"            
         ]
         self._browser = self._playwright.chromium.launch(
-            headless=False,
+            headless=headless,
             args=browser_args,
         )
         self._context = self._browser.new_context(
