@@ -7,7 +7,7 @@ class KYClientManager:
     borgere: BorgereClient
 
     def __init__(
-        self, username: str, password: str, idp: str, headless: bool = False
+        self, username: str, password: str, idp: str, headless: bool = True
     ) -> None:
         self._client = KYClient(username, password, idp, headless=headless)
         self.borgere = BorgereClient(ky_client=self._client)

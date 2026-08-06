@@ -23,7 +23,7 @@ class KYClient:
         username: str,
         password: str,
         idp: str,
-        headless: bool = False,
+        headless: bool = True,
     ) -> None:
         self.logger = logging.getLogger(__name__)
         logging.getLogger("httpx").setLevel(logging.WARNING)
