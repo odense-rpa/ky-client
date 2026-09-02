@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from ky_client import KYClientManager
 from pathlib import Path
@@ -32,7 +32,13 @@ def test_upload_dokument(ky_manager: KYClientManager, test_cpr: str):
     file_path = (
         Path(__file__).resolve().parents[1] / "Test Upload.txt"
     )  # Erstat med stien til den fil, du vil uploade
-    ky_manager.borgere.upload_dokument(test_cpr, sagsnøgle, file_path)
+    ky_manager.borgere.upload_dokument(
+        test_cpr,
+        sagsnøgle,
+        file_path,
+        "Test dokument",
+        (datetime.now() - timedelta(days=1)).date(),
+    )
 
 
 def test_indtast_indtægter(ky_manager: KYClientManager, test_cpr: str):

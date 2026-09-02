@@ -9,11 +9,11 @@ def ky_manager() -> KYClientManager:
     """Fixture that provides a logged-in KYClientManager for tests."""
     username = os.getenv("KY_USER") or ""
     password = os.getenv("KY_PASSWORD") or ""
-    idp = os.getenv("KY_IDP") or ""
+    idp = os.getenv("KY_IDP") or ""    
 
     assert username
 
-    manager = KYClientManager(username, password, idp)
+    manager = KYClientManager(username, password, idp, headless=False)
 
     return manager
 

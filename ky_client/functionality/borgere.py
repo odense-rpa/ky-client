@@ -1,3 +1,4 @@
+from datetime import date
 import re
 
 from decimal import Decimal
@@ -250,7 +251,7 @@ class BorgereClient:
 
         return data
 
-    def upload_dokument(self, cpr: str, sagsnøgle: str, file_path: Path) -> None:
+    def upload_dokument(self, cpr: str, sagsnøgle: str, file_path: Path, titel: str = "", dato: date = date.today()) -> None:
         naviger_til_borger(self._page, cpr, timeout=30000)
         self._page.wait_for_selector(KYSelectors.Borgere.SAGSOVERSIGT, timeout=30000)
         sag_row = self._page.locator(
@@ -266,14 +267,18 @@ class BorgereClient:
         else:
             sag_row.click()
 
-        self._page.click(
-            "button[onclick=\"loadGenericModal('/entitet/sag/uploadfilesModal');\"]"
-        )
+        self._page.click(KYSelectors.Borgere.UPLOAD_DOKUMENT_MODAL)
+        
         upload_file = file_path.resolve()
-        self._page.set_input_files("input.upload-input[name='file']", str(upload_file))
-        self._page.click(
-            "button.btn-submit-form[data-url='/entitet/sag/submitUploads/']"
+        self._page.set_input_files(KYSelectors.Borgere.UPLOAD_DOKUMENT_FIL, str(upload_file))
+
+        if titel:
+            self._page.fill(KYSelectors.Borgere.UPLOAD_DOKUMENT_TITEL, titel)
+        self._page.fill(
+            KYSelectors.Borgere.UPLOAD_DOKUMENT_DATO,
+            dato.strftime("%d-%m-%Y"),
         )
+        self._page.click(KYSelectors.Borgere.UPLOAD_DOKUMENT_SEND)
 
     def indtast_indtægter(
         self,

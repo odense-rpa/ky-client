@@ -63,6 +63,15 @@ class KYSelectors:
         )
         OPGAVE_LOADER = "div#opgave-loader"
 
+        # Upload dokument
+        UPLOAD_DOKUMENT_MODAL = (
+            "button[onclick=\"loadGenericModal('/entitet/sag/uploadfilesModal');\"]"
+        )
+        UPLOAD_DOKUMENT_TITEL = "input#newDocumentTitle"
+        UPLOAD_DOKUMENT_DATO = "input#newDocumentDate"
+        UPLOAD_DOKUMENT_FIL = "input.upload-input[name='file']"
+        UPLOAD_DOKUMENT_SEND = "button.btn-submit-form[data-url='/entitet/sag/submitUploads/']"
+
         # Handlinger - Indtægter
         INDTÆGTER_MANUEL_INDTASTNING = 'button[data-onclick*="/opgave/indtaegter/formFields"]:has(span[data-textkey="system.medtagkoncept.add"])'
         JOURNALNOTAT_EXPAND_KOLLAPSET = (
