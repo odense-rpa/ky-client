@@ -540,23 +540,20 @@ class BorgereClient:
 
         # Some tasks require multiple approval steps before the close action is available.
         for _ in range(10):
-            try:
-                self._page.wait_for_selector(
-                    KYSelectors.Borgere.GODKEND_OPGAVE_LUK,
-                    timeout=1500,
-                )
-                self._wait_for_opgave_loader_to_clear(timeout=30000)
-                self._page.click(KYSelectors.Borgere.GODKEND_OPGAVE_LUK, timeout=30000)
-                return
-            except PlaywrightTimeoutError:
-                self._page.click(
-                    KYSelectors.Borgere.GODKEND_OPGAVE_GODKEND,
-                    timeout=30000,
-                )
+            self._wait_for_opgave_loader_to_clear(timeout=30000)
 
-        raise RuntimeError(
-            "Kunne ikke afslutte opgaven: 'Luk' knappen blev ikke tilgængelig"
-        )
+            luk = self._page.locator(KYSelectors.Borgere.GODKEND_OPGAVE_LUK)
+            if luk.count() > 0 and luk.first.is_visible() and luk.first.is_enabled():
+                luk.first.click(timeout=30000)
+                return
+
+            godkend = self._page.locator(KYSelectors.Borgere.GODKEND_OPGAVE_GODKEND)
+            if godkend.count() == 0 or not godkend.first.is_enabled():
+                break
+
+            godkend.first.click(timeout=30000)
+            # Godkend triggers an async submit; the loader must appear and clear before re-evaluating.
+            self._wait_for_opgave_loader_to_clear(timeout=30000)
 
     def rediger_opgave(
         self, cpr: str, opgave_id: str, ændringer: RedigerOpgave
