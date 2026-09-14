@@ -188,7 +188,7 @@ class BorgereClient:
         ):
             if self._page.locator(selector).is_visible():
                 self._page.click(selector, timeout=30000)
-                return False
+                return True
 
         raise PlaywrightTimeoutError(
             "Close-all-tasks popup was shown, but no known 'Afbryd og gem' button was visible."
