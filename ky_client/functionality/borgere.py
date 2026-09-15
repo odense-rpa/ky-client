@@ -1,4 +1,5 @@
 from datetime import date
+import logging
 import re
 
 from decimal import Decimal
@@ -440,12 +441,20 @@ class BorgereClient:
 
         self._page.locator(KYSelectors.Borgere.INDTÆGTER_GODKEND).click(timeout=30000)
         # Wait for Godkend to disappear before clicking Luk to avoid async race
-        # TODO: Endless spinner appeared here.
         self._page.wait_for_selector(
             KYSelectors.Borgere.INDTÆGTER_GODKEND, state="detached", timeout=30000
         )
         self._wait_for_opgave_loader_to_clear(timeout=30000)
-        self._page.locator(KYSelectors.Borgere.INDTÆGTER_LUK).click(timeout=30000)
+
+        try:
+            self._page.locator(KYSelectors.Borgere.INDTÆGTER_LUK).click(timeout=30000)
+        except PlaywrightTimeoutError:
+            logging.getLogger(__name__).warning(
+                "Timeout while closing completed indtægter task for CPR %s; re-navigating to the citizen to restore a stable page state.",
+                cpr,
+            )
+            naviger_til_borger(self._page, cpr, timeout=30000)
+
         self._page.wait_for_selector(
             KYSelectors.Borgere.UBEHANDLEDE_OPGAVER, timeout=30000
         )
