@@ -35,44 +35,59 @@ def _is_placeholder_header_row(values: list[str]) -> bool:
 
 def extract_keyed_table(page: Page, table_selector: str) -> dict[str, str]:
     """Extract a two-column label/value table into a dict."""
-    return page.evaluate(f"""() => {{
-		const rows = document.querySelectorAll('{table_selector} tbody tr');
-		const result = {{}};
-		rows.forEach(row => {{
-			const cells = row.querySelectorAll('td:not(.handlinger)');
-			if (cells.length >= 2) {{
-				result[cells[0].innerText.trim()] = cells[1].innerText.trim();
-			}}
-		}});
-		return result;
-	}}""")
+    selector = str(table_selector)
+    return page.evaluate(
+        """
+        (selector) => {
+            const table = document.querySelector(selector);
+            if (!table) return {};
+            const rows = table.querySelectorAll('tbody tr');
+            const result = {};
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td:not(.handlinger)');
+                if (cells.length >= 2) {
+                    result[cells[0].innerText.trim()] = cells[1].innerText.trim();
+                }
+            });
+            return result;
+        }
+        """,
+        selector,
+    )
 
 
 def extract_header_table(page: Page, table_selector: str) -> list[dict[str, str]]:
     """Extract a header-based table into a list of dicts."""
-    rows: list[dict[str, str]] = page.evaluate(f"""() => {{
-		const table = document.querySelector('{table_selector}');
-		const isVisibleRow = (row) => {{
-			if (!row || row.nodeType !== Node.ELEMENT_NODE) return false;
-			const style = window.getComputedStyle(row);
-			if (style.display === 'none' || style.visibility === 'hidden') return false;
-			return row.offsetParent !== null;
-		}};
-		const headers = Array.from(table.querySelectorAll('thead th')).map(th => {{
-			for (const span of th.querySelectorAll('span[data-textkey]')) {{
-				if (!span.closest('ul')) return span.innerText.trim();
-			}}
-			return null;
-		}});
-		return Array.from(table.querySelectorAll('tbody tr')).filter(isVisibleRow).map(row => {{
-			const cells = row.querySelectorAll('td:not(.handlinger)');
-			const obj = {{}};
-			cells.forEach((cell, i) => {{
-				if (headers[i]) obj[headers[i]] = cell.innerText.trim();
-			}});
-			return obj;
-		}});
-	}}""")
+    selector = str(table_selector)
+    rows: list[dict[str, str]] = page.evaluate(
+        """
+        (selector) => {
+            const table = document.querySelector(selector);
+            if (!table) return [];
+            const isVisibleRow = (row) => {
+                if (!row || row.nodeType !== Node.ELEMENT_NODE) return false;
+                const style = window.getComputedStyle(row);
+                if (style.display === 'none' || style.visibility === 'hidden') return false;
+                return row.offsetParent !== null;
+            };
+            const headers = Array.from(table.querySelectorAll('thead th')).map(th => {
+                for (const span of th.querySelectorAll('span[data-textkey]')) {
+                    if (!span.closest('ul')) return span.innerText.trim();
+                }
+                return null;
+            });
+            return Array.from(table.querySelectorAll('tbody tr')).filter(isVisibleRow).map(row => {
+                const cells = row.querySelectorAll('td:not(.handlinger)');
+                const obj = {};
+                cells.forEach((cell, i) => {
+                    if (headers[i]) obj[headers[i]] = cell.innerText.trim();
+                });
+                return obj;
+            });
+        }
+        """,
+        selector,
+    )
 
     filtered_rows: list[dict[str, str]] = []
     for row in rows:

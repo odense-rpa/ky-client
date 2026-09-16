@@ -26,6 +26,9 @@ def test_hent_skatteoplysninger(ky_manager: KYClientManager, test_cpr: str):
     result = ky_manager.borgere.hent_skatteoplysninger(test_cpr)
     assert isinstance(result, dict)
 
+def test_hent_udbetalinger(ky_manager: KYClientManager, test_cpr: str):
+    result = ky_manager.borgere.hent_udbetalinger(test_cpr)
+    assert isinstance(result, dict)
 
 def test_upload_dokument(ky_manager: KYClientManager, test_cpr: str):
     sagsnøgle = "HENV-MJOML7"  # Erstat med en gyldig sagsnøgle for testen
@@ -39,7 +42,6 @@ def test_upload_dokument(ky_manager: KYClientManager, test_cpr: str):
         "Test dokument",
         (datetime.now() - timedelta(days=1)).date(),
     )
-
 
 def test_indtast_indtægter(ky_manager: KYClientManager, test_cpr: str):
     indtaegter = Indtægter(

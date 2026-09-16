@@ -252,6 +252,28 @@ class BorgereClient:
 
         return data
 
+    def hent_udbetalinger(self, cpr: str) -> dict:
+        naviger_til_borger(self._page, cpr, timeout=30000)
+        navigate_to(
+            self._page,
+            KYSelectors.Borgere.UDBETALING,
+            KYSelectors.Borgere.KOMMENDE_UDBETALINGER_TABEL,
+        )
+
+        data = {            
+            "Kommende udbetalinger": extract_header_table(
+                self._page, KYSelectors.Borgere.KOMMENDE_UDBETALINGER_TABEL
+            ),
+            "Historiske udbetalinger": extract_header_table(
+                self._page, KYSelectors.Borgere.HISTORISKE_UDBETALINGER_TABEL
+            ),
+            "Udbetalingstotaler": extract_header_table(
+                self._page, KYSelectors.Borgere.UDBETALINGSTOTALER_TABEL
+            ),
+        }
+
+        return data
+
     def upload_dokument(self, cpr: str, sagsnøgle: str, file_path: Path, titel: str = "", dato: date = date.today()) -> None:
         naviger_til_borger(self._page, cpr, timeout=30000)
         self._page.wait_for_selector(KYSelectors.Borgere.SAGSOVERSIGT, timeout=30000)
@@ -605,7 +627,15 @@ class BorgereClient:
         )
         self._page.click(KYSelectors.Borgere.REDIGER_OPGAVE_LUK, timeout=30000)
 
-    # TODO: Slet opgave
+    def kontroller_markering(self, cpr: str, ledetekst: str) -> bool:
+        """Kontrollerer om en given opgave er markeret for en borger baseret på CPR-nummer og ledetekst."""
+        
+        naviger_til_borger(self._page, cpr, timeout=30000)        
+        markeret = self._page.locator(f"div.action-text[data-textargs*='{ledetekst}']").count() > 0
+
+        return markeret
+
+     
 
     def _select_styled_or_native_dropdown(
         self, select_selector: str, option_label: str

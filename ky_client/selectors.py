@@ -55,6 +55,11 @@ class KYSelectors:
         OVERSKYDENDE_SKAT = "table#overskydendeskat"
         OPLYSNINGER_SKAT = "table.select-year-skat-table"
 
+        # Udbetalinger
+        KOMMENDE_UDBETALINGER_TABEL = "table[id^='tabel_kommende_udbetalinger_']"
+        HISTORISKE_UDBETALINGER_TABEL = ".historik-udbetaling-tables table[id^='table']"
+        UDBETALINGSTOTALER_TABEL = "table[id^='tabel_udbetalingstotaler_']"
+
         # Handlinger
         HANDLINGER_DROPDOWN = "li#handlinger-dropdown a.dropdown-toggle"
         HANDLINGER_SUBPROCESSER = 'a.handlinger-submenu-btn:has(span[data-textkey="fagsystem.handlinger.haendelsegruppe.sub"])'
