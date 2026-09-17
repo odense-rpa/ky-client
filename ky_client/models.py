@@ -72,6 +72,42 @@ class Indtægter:
     opsparet_feriefridage: Optional[float] = None
     ydelsesarter: Optional[Ydelsesarter] = None
 
+class RefusionFrekvens(Enum):
+    ENKELT = "Enkelt"
+    MAANEDLIG = "Månedlig"
+    UGENTLIG = "Ugentlig"
+    VAELG_FRA_LISTE = "Vælg fra liste"
+
+
+class RefusionForudBagud(Enum):
+    BAGUD = "Bagud"
+    FORUD = "Forud"
+    VAELG_FRA_LISTE = "Vælg fra liste"
+
+
+class RefusionBetalingstype(Enum):
+    BEVILLINGSMODTAGER = "Bevillingsmodtager"
+    CPR_NUMMER = "CPR-nummer"
+    CVR_NUMMER = "CVR-nummer"
+    FORESLAETOVERFORT = "Foreslået overført til APØ-sag"
+    KONTONUMMER = "Kontonummer"
+    SE_NUMMER = "SE-nummer"
+    VAELG_FRA_LISTE = "Vælg fra liste"
+
+
+@dataclass
+class Refusion:
+    beloeb: Decimal = Decimal("0.0")
+    frekvens: RefusionFrekvens = field(default=RefusionFrekvens.VAELG_FRA_LISTE)
+    periode_fra: str = ""
+    periode_til: str = ""
+    forud_bagud: RefusionForudBagud = field(default=RefusionForudBagud.VAELG_FRA_LISTE)
+    tilbagebetalingspligtig: bool = False
+    betalingstype: RefusionBetalingstype = field(
+        default=RefusionBetalingstype.VAELG_FRA_LISTE
+    )
+    cvr: Optional[str] = None
+    besked_til_modtager: Optional[str] = None
 
 @dataclass
 class Journalnotat:

@@ -4,6 +4,7 @@ import re
 
 from decimal import Decimal
 from pathlib import Path
+from select import select
 from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError
 from ky_client.client import KYClient
 from ky_client.selectors import KYSelectors
@@ -13,7 +14,7 @@ from ky_client.utils import (
     navigate_to,
     naviger_til_borger,
 )
-from ky_client.models import Indtægter, RedigerOpgave, AfbrydType, Journalnotat
+from ky_client.models import Refusion, Indtægter, RedigerOpgave, AfbrydType, Journalnotat
 from typing import Optional
 
 
@@ -635,7 +636,78 @@ class BorgereClient:
 
         return markeret
 
-     
+
+    def indtast_refusion(self, cpr: str, refusion: Refusion, journalnotat: Journalnotat) -> None:
+        naviger_til_borger(self._page, cpr, timeout=30000)
+        self._page.locator(KYSelectors.Borgere.HANDLINGER_DROPDOWN).click(timeout=30000)
+        self._page.locator(KYSelectors.Borgere.HANDLINGER_EYAY).click(timeout=30000)
+        self._page.locator(
+            KYSelectors.Borgere.HANDLINGER_EYAY_ANDRE_YDELSER_RET
+        ).click(timeout=30000)
+
+        # Gå videre is the same button as Gem/Godkend (data-href="/opgave/handling/fortsaet")
+        self._page.locator(KYSelectors.Borgere.OPGAVE_FORTSAET).click(timeout=30000)
+        self._page.locator(KYSelectors.Borgere.OPGAVE_FORTSAET).click(timeout=30000)
+
+        self._page.locator(
+            KYSelectors.Borgere.REFUSION_TILFOEJ_MANUEL_INDTASTNING
+        ).click(timeout=30000)
+
+        if refusion.beloeb is not None:
+            self._page.fill(
+                KYSelectors.Borgere.REFUSION_BELOEB,
+                _to_danish_decimal(refusion.beloeb.quantize(Decimal("0.01"))),
+            )
+        if refusion.frekvens:
+            self._select_styled_or_native_dropdown(
+                KYSelectors.Borgere.REFUSION_FREKVENS, refusion.frekvens.value
+            )
+        if refusion.periode_fra:
+            self._page.fill(
+                KYSelectors.Borgere.REFUSION_PERIODE_FRA, refusion.periode_fra
+            )
+        if refusion.periode_til:
+            self._page.fill(
+                KYSelectors.Borgere.REFUSION_PERIODE_TIL, refusion.periode_til
+            )
+        if refusion.forud_bagud:
+            self._select_styled_or_native_dropdown(
+                KYSelectors.Borgere.REFUSION_FORUD_BAGUD, refusion.forud_bagud.value
+            )
+
+        tilbagebetalingspligtig_selector = (
+            KYSelectors.Borgere.REFUSION_TILBAGEBETALINGSPLIGTIG_JA
+            if refusion.tilbagebetalingspligtig
+            else KYSelectors.Borgere.REFUSION_TILBAGEBETALINGSPLIGTIG_NEJ
+        )
+        self._page.check(tilbagebetalingspligtig_selector, timeout=30000)
+
+        if refusion.betalingstype:
+            self._select_styled_or_native_dropdown(
+                KYSelectors.Borgere.REFUSION_BETALINGSTYPE, refusion.betalingstype.value
+            )
+
+        if refusion.cvr:
+            self._page.fill(KYSelectors.Borgere.REFUSION_CVR_NUMMER, refusion.cvr)
+        if refusion.besked_til_modtager:
+            self._page.fill(
+                KYSelectors.Borgere.REFUSION_BESKED_TIL_MODTAGER,
+                refusion.besked_til_modtager,
+            )
+
+        # Gem submits the form fragment before the journalnotat/approval steps
+        self._page.locator(KYSelectors.Borgere.REFUSION_GEM).click(timeout=30000)
+
+        # This flow has a different expanding flow than the usual journal note, therefore we click it twice
+        self._page.locator(
+            KYSelectors.Borgere.JOURNALNOTAT_EXPAND_KOLLAPSET
+        ).click(timeout=30000)
+        
+        self._opret_journalnotat(journalnotat)
+
+        self._page.locator(KYSelectors.Borgere.OPGAVE_FORTSAET).click(timeout=30000)
+        self._page.locator(KYSelectors.Borgere.REFUSION_GODKEND).click(timeout=30000)
+        self._page.locator(KYSelectors.Borgere.REFUSION_LUK).click(timeout=30000)
 
     def _select_styled_or_native_dropdown(
         self, select_selector: str, option_label: str

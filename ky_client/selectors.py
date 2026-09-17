@@ -66,6 +66,10 @@ class KYSelectors:
         HANDLINGER_SUBPROCESSER_INDTÆGTER = (
             'a.handlinger-leaf[data-textkey="system.type.haendelse_type.hd_indtaegter"]'
         )
+        HANDLINGER_EYAY = 'a.handlinger-submenu-btn:has(span[data-textkey="fagsystem.handlinger.haendelsegruppe.eyay"])'
+        HANDLINGER_EYAY_ANDRE_YDELSER_RET = (
+            'a.handlinger-leaf[data-textkey="system.type.haendelse_type.hd_rediger_ay"]'
+        )
         OPGAVE_LOADER = "div#opgave-loader"
 
         # Upload dokument
@@ -165,6 +169,34 @@ class KYSelectors:
         INDTÆGTER_GODKEND = 'button.submit-opgave[data-href="/opgave/handling/fortsaet"]:has(span[data-textkey="fagsystem.person.opgave.handling.godkend"])'
         INDTÆGTER_LUK = 'button#docked-close.submit-opgave[data-href="/opgave/handling/lukAfsluttetOpgave"]:has(span[data-textkey="fagsystem.person.opgave.handling.luk_afsluttet_opgave"])'
 
+        # Handlinger - Refusion (planlæg udbetaling)
+        REFUSION_BELOEB = "input#sager0\\.udbetalingCommand\\.form\\.beloeb\\.valueString"
+        REFUSION_FREKVENS = (
+            "select#sager0\\.udbetalingCommand\\.form\\.udbetalingsfrekvens\\.valueString"
+        )
+        REFUSION_PERIODE_FRA = "input#planlagtUdbetaling\\.command\\.sager\\[0\\]\\.udbetalingCommand\\.form\\.periodeFra\\.valueString"
+        REFUSION_PERIODE_TIL = "input#planlagtUdbetaling\\.command\\.sager\\[0\\]\\.udbetalingCommand\\.form\\.periodeTil\\.valueString"
+        REFUSION_FORUD_BAGUD = (
+            "select#sager0\\.udbetalingCommand\\.form\\.forudBagud\\.valueString"
+        )
+        REFUSION_TILBAGEBETALINGSPLIGTIG_JA = "input#sager0\\.udbetalingCommand\\.form\\.tilbagebetalingspligtig\\.valueString1"
+        REFUSION_TILBAGEBETALINGSPLIGTIG_NEJ = "input#sager0\\.udbetalingCommand\\.form\\.tilbagebetalingspligtig\\.valueString2"
+        REFUSION_BETALINGSTYPE = (
+            "select#sager0\\.udbetalingCommand\\.form\\.betalingsTyper\\.valueString"
+        )
+        REFUSION_TILFOEJ_MANUEL_INDTASTNING = (
+            'button.tilfoej-toggle[data-toggle="collapse"]:has(span[data-textkey="system.medtagkoncept.add"])'
+        )
+        REFUSION_CVR_NUMMER = (
+            "input#sager0\\.udbetalingCommand\\.form\\.cvrNummer\\.valueString"
+        )
+        REFUSION_BESKED_TIL_MODTAGER = (
+            "input#sager0\\.udbetalingCommand\\.form\\.tekstTilModtager\\.valueString"
+        )
+        REFUSION_GEM = 'button.submit-fragment[data-href^="/opgave/planlaegUdbetaling/submitForm/"]:has(span[data-textkey="system.medtagkoncept.gem"])'
+        REFUSION_GODKEND = 'button.submit-opgave[data-href="/opgave/handling/fortsaet"]:has(span[data-textkey="fagsystem.person.opgave.handling.godkend"])'
+        REFUSION_LUK = 'button#docked-close.submit-opgave[data-href="/opgave/handling/lukAfsluttetOpgave"]:has(span[data-textkey="fagsystem.person.opgave.handling.luk_afsluttet_opgave"])'
+
         # Rediger opgave
         REDIGER_OPGAVE_GEM = 'button.btn.btn-primary[data-textkey="fagsystem.edit_opgave_modal.edit.submit.btn"]'
         REDIGER_OPGAVE_LUK = (
@@ -172,7 +204,9 @@ class KYSelectors:
         )
 
         # Godkend opgave
-        GODKEND_OPGAVE_GODKEND = 'button[type="button"].btn.btn-primary.submit-opgave.margin-right[data-href="/opgave/handling/fortsaet"]:has(span[data-textkey="fagsystem.person.opgave.handling.godkend"])'
+        # Gem, Gå videre og Godkend er samme knap (data-href="/opgave/handling/fortsaet"), kun labelen ændrer sig
+        OPGAVE_FORTSAET = 'button[type="button"].btn.btn-primary.submit-opgave.margin-right[data-href="/opgave/handling/fortsaet"]'
+        GODKEND_OPGAVE_GODKEND = OPGAVE_FORTSAET
         GODKEND_OPGAVE_LUK = 'button#docked-close.submit-opgave[data-href="/opgave/handling/lukAfsluttetOpgave"]:has(span[data-textkey="fagsystem.person.opgave.handling.luk_afsluttet_opgave"])'
 
         # Afbryd opgave modal

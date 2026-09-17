@@ -4,7 +4,11 @@ from ky_client import KYClientManager
 from pathlib import Path
 from ky_client.models import (
     AfbrydType,
+    Refusion,
     Journalnotat,
+    RefusionBetalingstype,
+    RefusionForudBagud,    
+    RefusionFrekvens,
     Indtægter,
     IndtægterType,
     RedigerOpgave,
@@ -16,11 +20,9 @@ def test_hent_borgersag(ky_manager: KYClientManager, test_cpr: str):
     result = ky_manager.borgere.hent_borgersag(test_cpr)
     assert isinstance(result, dict)
 
-
 def test_hent_ferieoplysninger(ky_manager: KYClientManager, test_cpr: str):
     result = ky_manager.borgere.hent_ferieoplysninger(test_cpr)
     assert isinstance(result, dict)
-
 
 def test_hent_skatteoplysninger(ky_manager: KYClientManager, test_cpr: str):
     result = ky_manager.borgere.hent_skatteoplysninger(test_cpr)
@@ -65,6 +67,32 @@ def test_indtast_indtægter(ky_manager: KYClientManager, test_cpr: str):
         ky_manager.borgere.indtast_indtægter(test_cpr, indtaegter, journalnotat)
     except Exception as e:
         print(f"Fejl under indtastning af indtægter: {e}")
+        raise
+
+def test_indtast_refusion(ky_manager: KYClientManager, test_cpr: str):    
+    refusion = Refusion(
+        beloeb=Decimal("100.00"),
+        frekvens=RefusionFrekvens.ENKELT,
+        periode_fra="01-09-2026",
+        periode_til="30-09-2026",
+        forud_bagud=RefusionForudBagud.BAGUD,
+        tilbagebetalingspligtig=False,
+        betalingstype=RefusionBetalingstype.CVR_NUMMER,
+        cvr="29687099",
+        besked_til_modtager="Test besked",
+    )
+
+    journalnotat = Journalnotat(
+        indhold="Simof Test",
+        sagstype="LAB § 66",
+        skabelongruppe="LØT",
+        skabelon="Robot beregning",
+    )
+
+    try:
+        ky_manager.borgere.indtast_refusion(test_cpr, refusion, journalnotat)
+    except Exception as e:
+        print(f"Fejl under indtastning af refusion: {e}")
         raise
 
 
