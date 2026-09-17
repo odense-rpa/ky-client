@@ -170,6 +170,7 @@ class KYSelectors:
         INDTÆGTER_LUK = 'button#docked-close.submit-opgave[data-href="/opgave/handling/lukAfsluttetOpgave"]:has(span[data-textkey="fagsystem.person.opgave.handling.luk_afsluttet_opgave"])'
 
         # Handlinger - Refusion (planlæg udbetaling)
+        REFUSION_GYLDIG_FRA = "input#command\\.gyldigFra\\.valueString"
         REFUSION_BELOEB = "input#sager0\\.udbetalingCommand\\.form\\.beloeb\\.valueString"
         REFUSION_FREKVENS = (
             "select#sager0\\.udbetalingCommand\\.form\\.udbetalingsfrekvens\\.valueString"

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 import logging
 import re
 
@@ -644,6 +644,18 @@ class BorgereClient:
         self._page.locator(
             KYSelectors.Borgere.HANDLINGER_EYAY_ANDRE_YDELSER_RET
         ).click(timeout=30000)
+
+        if refusion.periode_fra:
+            try:
+                gyldig_fra = datetime.strptime(refusion.periode_fra, "%d-%m-%Y").replace(day=1)
+            except ValueError as error:
+                raise ValueError(
+                    "refusion.periode_fra skal være en dato i formatet DD-MM-YYYY"
+                ) from error
+            self._page.fill(
+                KYSelectors.Borgere.REFUSION_GYLDIG_FRA,
+                gyldig_fra.strftime("%d-%m-%Y"),
+            )
 
         # Gå videre is the same button as Gem/Godkend (data-href="/opgave/handling/fortsaet")
         self._page.locator(KYSelectors.Borgere.OPGAVE_FORTSAET).click(timeout=30000)
