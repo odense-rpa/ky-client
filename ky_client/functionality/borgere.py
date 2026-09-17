@@ -43,18 +43,27 @@ class BorgereClient:
         )
 
     def _opret_journalnotat(self, journalnotat: Journalnotat) -> None:
-        # Håndter collapse
-        expand_toggle = self._page.locator(
-            KYSelectors.Borgere.JOURNALNOTAT_EXPAND_KOLLAPSET
-        )
-        if expand_toggle.count() > 0:
-            expand_toggle.first.click(timeout=30000)
-
-        # Håndter i forvejen valgte sagstyper, fremsøg sagstype og vælg på ny
-        sagsvaelger_input = self._page.locator(
-            KYSelectors.Borgere.JOURNALNOTAT_SAGSVAELGER_INPUT
+        journalnotat_pane = self._page.locator(
+            "div.journalnotat_instans:has(input.sagsvaelger-input)"
         ).first
 
+        journalnotat_content = journalnotat_pane.locator(":scope > div > div").first
+        expand_toggle = journalnotat_pane.locator(
+            'div.journalnotat_instans-header a[data-toggle="collapse"]'
+        )
+        if (
+            journalnotat_content.count() > 0
+            and not journalnotat_content.is_visible()
+            and expand_toggle.count() > 0
+        ):
+            expand_toggle.click(timeout=30000)
+            journalnotat_content.wait_for(state="visible", timeout=30000)
+
+        # Håndter i forvejen valgte sagstyper, fremsøg sagstype og vælg på ny
+        sagsvaelger_input = journalnotat_pane.locator(
+            "input.sagsvaelger-input"
+        ).first
+        sagsvaelger_input.wait_for(state="visible", timeout=30000)
         sagsvaelger_input.click(timeout=30000)
 
         if sagsvaelger_input.count() > 0:
