@@ -718,11 +718,6 @@ class BorgereClient:
 
         # Gem submits the form fragment before the journalnotat/approval steps
         self._page.locator(KYSelectors.Borgere.REFUSION_GEM).click(timeout=30000)
-
-        # This flow has a different expanding flow than the usual journal note, therefore we click it twice
-        self._page.locator(
-            KYSelectors.Borgere.JOURNALNOTAT_EXPAND_KOLLAPSET
-        ).click(timeout=30000)
         
         self._opret_journalnotat(journalnotat)
 
