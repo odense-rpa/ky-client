@@ -141,6 +141,8 @@ class BorgereClient:
             }""",
             timeout=5000,
         )
+        self._page.wait_for_timeout(3000)  # Wait for 3 seconds to ensure the template selection is applied        
+
         self._page.evaluate(
             """(indhold) => {
                 tinymce.get('tilfoejedeJournalnotater0.notat').setContent(indhold);
@@ -654,6 +656,8 @@ class BorgereClient:
             KYSelectors.Borgere.HANDLINGER_EYAY_ANDRE_YDELSER_RET
         ).click(timeout=30000)
 
+        
+
         if refusion.periode_fra:
             try:
                 gyldig_fra = datetime.strptime(refusion.periode_fra, "%d-%m-%Y").replace(day=1)
@@ -668,6 +672,10 @@ class BorgereClient:
 
         # Gå videre is the same button as Gem/Godkend (data-href="/opgave/handling/fortsaet")
         self._page.locator(KYSelectors.Borgere.OPGAVE_FORTSAET).click(timeout=30000)
+        sag_valgt = self._select_lab_sag_for_refusion()
+        if sag_valgt:
+            self._page.locator(KYSelectors.Borgere.OPGAVE_FORTSAET).click(timeout=30000)
+
         self._page.locator(KYSelectors.Borgere.OPGAVE_FORTSAET).click(timeout=30000)
 
         self._page.locator(
@@ -724,6 +732,46 @@ class BorgereClient:
         self._page.locator(KYSelectors.Borgere.OPGAVE_FORTSAET).click(timeout=30000)
         self._page.locator(KYSelectors.Borgere.REFUSION_GODKEND).click(timeout=30000)
         self._page.locator(KYSelectors.Borgere.REFUSION_LUK).click(timeout=30000)
+
+    def _select_lab_sag_for_refusion(self) -> bool:
+        sagsvaelger_input = self._page.locator(
+            "input#command\\.sagsId\\.valueString"
+        )
+        sagsvaelger_input.wait_for(state="visible", timeout=30000)
+
+        if sagsvaelger_input.input_value().strip() != "Ingen sager valgt":
+            return False
+
+        sagsvaelger_input.click(timeout=30000)
+        sagsvaelger_table = self._page.locator("#kysagsvaelgertable:visible").first
+        sagsvaelger_table.wait_for(state="visible", timeout=30000)
+
+        row_index = sagsvaelger_table.evaluate(
+            """(table) => {
+                const normalize = (value) => (value || '').replace(/\\s+/g, ' ').trim();
+                const headers = Array.from(table.querySelectorAll('thead th'));
+                const ydelse_index = headers.findIndex(
+                    (header) => normalize(header.textContent).toLowerCase() === 'ydelse'
+                );
+                if (ydelse_index < 0) {
+                    return -1;
+                }
+
+                return Array.from(table.querySelectorAll('tbody tr')).findIndex((row) => {
+                    const style = window.getComputedStyle(row);
+                    if (style.display === 'none' || style.visibility === 'hidden') {
+                        return false;
+                    }
+                    const cell = row.cells[ydelse_index];
+                    return cell && normalize(cell.textContent).startsWith('LAB');
+                });
+            }"""
+        )
+        if row_index < 0:
+            raise ValueError("Fandt ingen sag med en ydelse, der starter med LAB")
+
+        sagsvaelger_table.locator("tbody tr").nth(row_index).click(timeout=30000)
+        return True
 
     def _select_styled_or_native_dropdown(
         self, select_selector: str, option_label: str
