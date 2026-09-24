@@ -49,7 +49,7 @@ class BorgereClient:
 
         journalnotat_content = journalnotat_pane.locator(":scope > div > div").first
         expand_toggle = journalnotat_pane.locator(
-            'div.journalnotat_instans-header a[data-toggle="collapse"]'
+            KYSelectors.Borgere.JOURNALNOTAT_EXPAND_KOLLAPSET
         )
         if (
             journalnotat_content.count() > 0
