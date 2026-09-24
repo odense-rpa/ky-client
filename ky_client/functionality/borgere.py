@@ -48,16 +48,21 @@ class BorgereClient:
         ).first
 
         journalnotat_content = journalnotat_pane.locator(":scope > div > div").first
+        # Only expand when the collapse control is in the closed state. The visual cue
+        # is the plus icon; if it is already expanded, the button should not be clicked.
         expand_toggle = journalnotat_pane.locator(
             KYSelectors.Borgere.JOURNALNOTAT_EXPAND_KOLLAPSET
         )
-        if (
-            journalnotat_content.count() > 0
-            and not journalnotat_content.is_visible()
-            and expand_toggle.count() > 0
-        ):
-            expand_toggle.click(timeout=30000)
-            journalnotat_content.wait_for(state="visible", timeout=30000)
+        if expand_toggle.count() > 0:
+            has_plus_icon = expand_toggle.first.evaluate(
+                """(el) => {
+                    const icon = el.matches('.fa-plus') ? el : el.querySelector('.fa-plus');
+                    return !!icon && icon.offsetParent !== null;
+                }"""
+            )
+            if has_plus_icon:
+                expand_toggle.first.click(timeout=30000)
+                journalnotat_content.wait_for(state="visible", timeout=30000)
 
         # Håndter i forvejen valgte sagstyper, fremsøg sagstype og vælg på ny
         sagsvaelger_input = journalnotat_pane.locator(

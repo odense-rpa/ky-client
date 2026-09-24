@@ -83,10 +83,8 @@ class KYSelectors:
 
         # Handlinger - Indtægter
         INDTÆGTER_MANUEL_INDTASTNING = 'button[data-onclick*="/opgave/indtaegter/formFields"]:has(span[data-textkey="system.medtagkoncept.add"])'
-        # Generic selector for a collapsed panel: only the plus icon indicates the section is closed.
-        JOURNALNOTAT_EXPAND_KOLLAPSET = (
-            "a[data-toggle='collapse'] .fa-plus, a[data-toggle='collapse'].fa-plus"
-        )
+        # Generic collapse toggle selector used across platforms.
+        JOURNALNOTAT_EXPAND_KOLLAPSET = "a[data-toggle='collapse']"
         JOURNALNOTAT_SAGSVAELGER_INPUT = "input.sagsvaelger-input"
         JOURNALNOTAT_AKTIV_VALGT_SAG = (
             '#sagsvaelgertable tr.selected[data-tilstand="aktiv"]'
