@@ -738,11 +738,19 @@ class BorgereClient:
         self._page.locator(KYSelectors.Borgere.REFUSION_GODKEND).click(timeout=30000)
         self._page.locator(KYSelectors.Borgere.REFUSION_LUK).click(timeout=30000)
 
-    def _select_lab_sag_for_refusion(self) -> bool:
+    def _select_lab_sag_for_refusion(self) -> bool:        
         sagsvaelger_input = self._page.locator(
             "input#command\\.sagsId\\.valueString"
         )
-        sagsvaelger_input.wait_for(state="visible", timeout=30000)
+        # Variable flow: the sagsvaelger is not always shown, in which case there is
+        # nothing to select and the caller continues without the extra "Gå videre".
+        try:
+            sagsvaelger_input.wait_for(state="visible", timeout=30000)
+        except PlaywrightTimeoutError:
+            logging.getLogger(__name__).info(
+                "Sagsvælger ikke vist; fortsætter uden at vælge sag."
+            )
+            return False
 
         if sagsvaelger_input.input_value().strip() != "Ingen sager valgt":
             return False
