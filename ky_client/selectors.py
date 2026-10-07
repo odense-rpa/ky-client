@@ -23,6 +23,12 @@ class KYSelectors:
         PERSON_OPLYSNINGER = "table#person-oplysninger"
         SAGSOVERSIGT = "table#sagsoversigt"
         UBEHANDLEDE_OPGAVER = "table#ubehandlede-opgaver"
+        SAGSOVERSIGT_PASSIV_FILTER = (
+            'input.table-filter-checkbox[name="passiv"][id*="sagsoversigtTable"]'
+        )
+        SAGSOVERSIGT_PASSIV_FILTER_LABEL = (
+            'label[for$="sagsoversigtTable/passiv"]'
+        )
         LIVSSITUATION = "table#person-overblik-livssituation"
         LÅST_BANNER = 'div[data-textkey="system.type.advarsel_item.reserveret_af"]'
 

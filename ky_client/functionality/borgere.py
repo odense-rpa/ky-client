@@ -155,10 +155,42 @@ class BorgereClient:
             journalnotat.indhold,
         )
 
-    def hent_borgersag(self, cpr: str) -> dict:
+    def hent_borgersag(self, cpr: str, medtag_passive_sager: Optional[bool] = False) -> dict:
         naviger_til_borger(self._page, cpr, timeout=30000)
 
         match = re.search(r"pId=([a-f0-9\-]*)", self._page.url)
+
+        if medtag_passive_sager:
+            # The input is visually hidden by the custom checkbox styling, so click its label instead
+            checkbox = self._page.locator(KYSelectors.Borgere.SAGSOVERSIGT_PASSIV_FILTER)
+            checkbox.wait_for(state="attached", timeout=30000)
+            if not checkbox.is_checked():
+                # Record DOM changes around the table, so we can tell when the reload has been rendered
+                # regardless of how many rows the table ends up with
+                self._page.evaluate(
+                    """(selector) => {
+                        window.__sagsoversigtMutated = false;
+                        const table = document.querySelector(selector);
+                        const root = (table && table.parentElement) || document.body;
+                        new MutationObserver((_, observer) => {
+                            window.__sagsoversigtMutated = true;
+                            observer.disconnect();
+                        }).observe(root, { childList: true, subtree: true, characterData: true });
+                    }""",
+                    KYSelectors.Borgere.SAGSOVERSIGT,
+                )
+                with self._page.expect_response(
+                    lambda r: "sagsoversigtTable" in r.url, timeout=30000
+                ):
+                    self._page.click(KYSelectors.Borgere.SAGSOVERSIGT_PASSIV_FILTER_LABEL, timeout=30000)
+                try:
+                    self._page.wait_for_function(
+                        "() => window.__sagsoversigtMutated === true", timeout=10000
+                    )
+                except PlaywrightTimeoutError:
+                    # The table can legitimately be unchanged (e.g. no passive cases)
+                    logging.debug("Sagsoversigt did not change after enabling passive filter")
+            self._page.wait_for_load_state("networkidle", timeout=30000)
 
         data = {
             "pId": match.group(1) if match else None,
@@ -860,3 +892,6 @@ class BorgereClient:
 def _to_danish_decimal(val: float | Decimal) -> str:
     # Converts 6509.73 -> '6.509,73' (Danish format)
     return f"{val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+# TODO: Opret opfølgningsopgave
+# TODO: Spec class with necessary and optional parameters
