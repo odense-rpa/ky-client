@@ -14,7 +14,7 @@ from ky_client.utils import (
     navigate_to,
     naviger_til_borger,
 )
-from ky_client.models import Refusion, Indtægter, RedigerOpgave, AfbrydType, Journalnotat
+from ky_client.models import Refusion, Indtægter, RedigerOpgave, AfbrydType, Journalnotat, Opfølgningsopgave
 from typing import Optional
 
 
@@ -823,7 +823,16 @@ class BorgereClient:
     ) -> None:
         """Select option via JS-styled dropdown UI when present, else fall back to native select."""
         select_locator = self._page.locator(select_selector)
-        select_locator.wait_for(state="visible", timeout=30000)
+        try:
+            select_locator.wait_for(state="visible", timeout=30000)
+        except PlaywrightTimeoutError as error:
+            select_ider = self._page.eval_on_selector_all(
+                "select", "els => els.map(e => `${e.id} (synlig: ${e.offsetParent !== null})`)"
+            )
+            raise RuntimeError(
+                f"Dropdown {select_selector} blev ikke synlig. "
+                f"Dropdowns på siden: {select_ider}"
+            ) from error
 
         option_value = self._page.eval_on_selector(
             select_selector,
@@ -849,11 +858,13 @@ class BorgereClient:
                 const el = document.querySelector(selector);
                 if (!el) return false;
                 const jq = window.jQuery || window.$;
-                if (jq && typeof jq(el).selectpicker === 'function') {
+                // selectpicker is a global jQuery plugin, so only use it when this
+                // element is actually initialised, and verify that the value stuck.
+                if (jq && typeof jq(el).selectpicker === 'function' && jq(el).data('selectpicker')) {
                     jq(el).selectpicker('val', value);
                     jq(el).trigger('changed.bs.select');
                     jq(el).trigger('change');
-                    return true;
+                    return el.value === value;
                 }
                 return false;
             }""",
@@ -872,7 +883,7 @@ class BorgereClient:
                 styled_button.first.click(timeout=30000)
                 option_in_open_menu = self._page.locator(
                     ".bootstrap-select.open .dropdown-menu.inner li a span.text",
-                    has_text=re.compile(rf"^\\s*{re.escape(option_label)}\\s*$"),
+                    has_text=re.compile(rf"^\s*{re.escape(option_label)}\s*$"),
                 ).first
                 if option_in_open_menu.count() > 0:
                     option_in_open_menu.click(timeout=30000)
@@ -888,10 +899,119 @@ class BorgereClient:
             }""",
         )
 
+    def opret_opfølgningsopgave(
+        self,
+        cpr: str,
+        sagsnøgle: str,
+        opfølgningsopgave: Opfølgningsopgave,
+        journalnotat: Optional[Journalnotat] = None,
+    ) -> None:
+        naviger_til_borger(self._page, cpr, timeout=30000)
+        self._page.locator(KYSelectors.Borgere.HANDLINGER_DROPDOWN).click(timeout=30000)
+        self._page.locator(KYSelectors.Borgere.HANDLINGER_ADMINISTRATION).click(
+            timeout=30000
+        )
+        self._page.locator(
+            KYSelectors.Borgere.HANDLINGER_OPRET_OPFOELGNINGSOPGAVE
+        ).click(timeout=30000)
+
+        # Sagsvælgeren vises ikke altid. Vent til enten sagsvælgeren eller selve
+        # formularen er indlæst, så et spinner-forløb ikke springes over.
+        sagsvaelger_panel = self._page.locator(KYSelectors.Borgere.SAGSVAELGER_PANEL)
+        formular_felt = self._page.locator(KYSelectors.Borgere.OPFOELGNING_TYPE)
+        sagsvaelger_panel.or_(formular_felt).first.wait_for(
+            state="attached", timeout=30000
+        )
+        self._wait_for_opgave_loader_to_clear(timeout=30000)
+
+        if sagsvaelger_panel.count() > 0:
+            self._vaelg_sag_via_sagsnoegle(sagsnøgle)
+            self._page.locator(KYSelectors.Borgere.OPGAVE_FORTSAET).click(timeout=30000)
+            self._wait_for_opgave_loader_to_clear(timeout=30000)
+
+        self._udfyld_opfølgningsopgave(opfølgningsopgave)
+
+        if journalnotat:
+            self._opret_journalnotat(journalnotat)
+
+        self._page.locator(KYSelectors.Borgere.OPGAVE_FORTSAET).click(timeout=30000)
+        self._page.locator(KYSelectors.Borgere.REFUSION_LUK).click(timeout=30000)
+
+    def _vaelg_sag_via_sagsnoegle(self, sagsnøgle: str) -> None:
+        sagsvaelger_input = self._page.locator(KYSelectors.Borgere.SAGSVAELGER_INPUT)
+        sagsvaelger_input.wait_for(state="visible", timeout=30000)
+        sagsvaelger_input.click(timeout=30000)
+
+        # Både aktive og passive sager skal være synlige. Checkboxene er skjult af
+        # custom styling, så der klikkes direkte på elementet.
+        for selector in (
+            KYSelectors.Borgere.SAGSVAELGER_AKTIV_CHECKBOX,
+            KYSelectors.Borgere.SAGSVAELGER_PASSIV_CHECKBOX,
+        ):
+            checkbox = self._page.locator(selector).first
+            checkbox.wait_for(state="attached", timeout=30000)
+            if not checkbox.is_checked():
+                checkbox.evaluate("el => el.click()")
+
+        # Tabellen er først synlig, når Aktive/Passive er afkrydset
+        sagsvaelger_tabel = self._page.locator(
+            KYSelectors.Borgere.SAGSVAELGER_TABEL
+        ).first
+        sagsvaelger_tabel.wait_for(state="visible", timeout=30000)
+
+        række = sagsvaelger_tabel.locator("tbody tr", has_text=sagsnøgle).first
+        try:
+            række.wait_for(state="visible", timeout=30000)
+        except PlaywrightTimeoutError as error:
+            raise ValueError(
+                f"Fandt ingen sag med sagsnøgle '{sagsnøgle}'"
+            ) from error
+        række.click(timeout=30000)
+
+    def _udfyld_opfølgningsopgave(self, opgave: Opfølgningsopgave) -> None:
+        try:
+            self._page.locator(KYSelectors.Borgere.OPFOELGNING_TYPE).wait_for(
+                state="attached", timeout=30000
+            )
+        except PlaywrightTimeoutError as error:
+            # Selectoren er ikke verificeret mod formularen, så vis hvilke felter der findes
+            felt_ider = self._page.eval_on_selector_all(
+                "select[id], input[id], textarea[id]", "els => els.map(e => e.id)"
+            )
+            raise RuntimeError(
+                f"Fandt ikke {KYSelectors.Borgere.OPFOELGNING_TYPE}. "
+                f"Felter på siden: {felt_ider}"
+            ) from error
+
+        self._select_styled_or_native_dropdown(
+            KYSelectors.Borgere.OPFOELGNING_TYPE, opgave.opfølgningstype
+        )
+        self._page.fill(
+            KYSelectors.Borgere.OPFOELGNING_DATO,
+            opgave.opfølgningsdato.strftime("%d-%m-%Y"),
+        )
+
+        if opgave.opfølgningstype != "Brugerdefineret":
+            return
+
+        if not opgave.titel:
+            raise ValueError("titel er påkrævet for brugerdefinerede opfølgningsopgaver")
+
+        self._page.fill(KYSelectors.Borgere.OPFOELGNING_TITEL, opgave.titel)
+        if opgave.hændelsestype:
+            self._select_styled_or_native_dropdown(
+                KYSelectors.Borgere.OPFOELGNING_HAENDELSESTYPE, opgave.hændelsestype
+            )
+        self._select_styled_or_native_dropdown(
+            KYSelectors.Borgere.OPFOELGNING_FREKVENS, opgave.frekvens
+        )
+
+        if opgave.beskrivelse:
+            self._page.fill(
+                KYSelectors.Borgere.OPFOELGNING_BESKRIVELSE, opgave.beskrivelse
+            )
+
 
 def _to_danish_decimal(val: float | Decimal) -> str:
     # Converts 6509.73 -> '6.509,73' (Danish format)
     return f"{val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
-# TODO: Opret opfølgningsopgave
-# TODO: Spec class with necessary and optional parameters

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from ky_client import KYClientManager
 from pathlib import Path
@@ -6,6 +6,7 @@ from ky_client.models import (
     AfbrydType,
     Refusion,
     Journalnotat,
+    Opfølgningsopgave,
     RefusionBetalingstype,
     RefusionForudBagud,    
     RefusionFrekvens,
@@ -17,7 +18,7 @@ from ky_client.models import (
 
 
 def test_hent_borgersag(ky_manager: KYClientManager, test_cpr: str):
-    result = ky_manager.borgere.hent_borgersag(test_cpr)
+    result = ky_manager.borgere.hent_borgersag(test_cpr, True)
     assert isinstance(result, dict)
 
 def test_hent_ferieoplysninger(ky_manager: KYClientManager, test_cpr: str):
@@ -93,6 +94,25 @@ def test_indtast_refusion(ky_manager: KYClientManager, test_cpr: str):
         ky_manager.borgere.indtast_refusion(test_cpr, refusion, journalnotat)
     except Exception as e:
         print(f"Fejl under indtastning af refusion: {e}")
+        raise
+
+def test_opret_opfølgningsopgave(ky_manager: KYClientManager, test_cpr: str):
+    beskrivelse = "Vi har den 07-10-2026 modtaget refusionsanmodning for perioden 21-08-2026 – 11-09-2026.\nFrist for underretningsbrev er den 18-10-2026 – refusionen kan herefter anvises."
+
+    opfølgningsopgave = Opfølgningsopgave(
+        opfølgningstype="Brugerdefineret",
+        opfølgningsdato=date.today() + timedelta(days=11),
+        titel="Frist for underretningsbrev – anvis refusion på sagen",
+        frekvens="Aldrig",        
+        beskrivelse=beskrivelse,
+    )
+
+    try:
+        ky_manager.borgere.opret_opfølgningsopgave(
+            test_cpr, "RESJR-HYTWA3", opfølgningsopgave
+        )
+    except Exception as e:
+        print(f"Fejl under oprettelse af opfølgningsopgave: {e}")
         raise
 
 

@@ -203,6 +203,21 @@ class KYSelectors:
         REFUSION_GODKEND = 'button.submit-opgave[data-href="/opgave/handling/fortsaet"]:has(span[data-textkey="fagsystem.person.opgave.handling.godkend"])'
         REFUSION_LUK = 'button#docked-close.submit-opgave[data-href="/opgave/handling/lukAfsluttetOpgave"]:has(span[data-textkey="fagsystem.person.opgave.handling.luk_afsluttet_opgave"])'
 
+        # Handlinger - Opret opfølgningsopgave
+        HANDLINGER_ADMINISTRATION = 'a.handlinger-submenu-btn:has(span[data-textkey="fagsystem.handlinger.haendelsegruppe.adm"])'
+        HANDLINGER_OPRET_OPFOELGNINGSOPGAVE = 'a.handlinger-leaf[data-textkey="system.type.haendelse_type.hd_manuel_opret_opfoelgningsopgave"]'
+        SAGSVAELGER_PANEL = 'a[data-toggle="collapse"][href="#COMMON_SAGSVAELGER"]'
+        SAGSVAELGER_INPUT = "input#command\\.sagsId\\.valueString"
+        SAGSVAELGER_TABEL = "#kysagsvaelgertable:visible"
+        SAGSVAELGER_AKTIV_CHECKBOX = 'input[type="checkbox"][data-tilstand="aktiv"]'
+        SAGSVAELGER_PASSIV_CHECKBOX = 'input[type="checkbox"][data-tilstand="passiv"]'
+        OPFOELGNING_TYPE = "select#opfoelgningsType"
+        OPFOELGNING_DATO = "input#command\\.opfoelgningsdato"
+        OPFOELGNING_TITEL = "input#title"
+        OPFOELGNING_FREKVENS = "select#frekvens"
+        OPFOELGNING_HAENDELSESTYPE = "select#haendelseType"
+        OPFOELGNING_BESKRIVELSE = "textarea#beskrivelse"
+
         # Rediger opgave
         REDIGER_OPGAVE_GEM = 'button.btn.btn-primary[data-textkey="fagsystem.edit_opgave_modal.edit.submit.btn"]'
         REDIGER_OPGAVE_LUK = (

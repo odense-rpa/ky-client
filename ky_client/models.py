@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import date
 from decimal import Decimal
 from enum import Enum
 from typing import Literal, Optional
@@ -115,6 +116,29 @@ class Journalnotat:
     sagstype: str
     skabelongruppe: str
     skabelon: str
+
+
+OpfølgningsFrekvens = Literal[
+    "Aldrig",
+    "Dagligt",
+    "Ugenligt",
+    "Hver anden uge",
+    "Månedligt",
+    "Hver tredje måned",
+    "Halvårligt",
+    "Årligt",
+]
+
+
+@dataclass
+class Opfølgningsopgave:
+    opfølgningstype: str
+    opfølgningsdato: date
+    # Felterne nedenfor bruges kun når opfølgningstype == "Brugerdefineret"
+    titel: Optional[str] = None
+    frekvens: OpfølgningsFrekvens = "Aldrig"
+    hændelsestype: Optional[str] = None
+    beskrivelse: Optional[str] = None
 
 
 @dataclass
