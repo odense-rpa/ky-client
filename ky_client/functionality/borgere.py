@@ -222,14 +222,14 @@ class BorgereClient:
 
         try:
             self._page.wait_for_selector(
-                KYSelectors.Opgaveindbakke.VÆLG_OPGAVEPAKKE, timeout=5000
+                KYSelectors.Opgaveindbakke.VÆLG_OPGAVEPAKKE, timeout=10000
             )
             return True
         except PlaywrightTimeoutError:
             pass
 
         self._page.wait_for_selector(
-            KYSelectors.Borgere.LUK_ALLE_OPGAVER_FORM, timeout=5000
+            KYSelectors.Borgere.LUK_ALLE_OPGAVER_FORM, timeout=10000
         )
 
         for selector in (
